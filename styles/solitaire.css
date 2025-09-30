@@ -1,824 +1,305 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solitaire</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --card-width: 80px;
-      --card-height: 112px;
-      --gap: 10px;
-      --border-radius: 8px;
-      --main-green: #0A5323;
-      --dark-green: #08401B;
-      --light-text: #FFFFFF;
-      --dark-blue: #2A4C6B;
-      --dark-blue-hover: #3B6A96;
-      --red-suit: #D92D20;
-      --black-suit: #1D2939;
-      --selected-outline: #FDB022;
-    }
-
-    @media (max-width: 600px) {
-      :root {
-        --card-width: 12vw;
-        --card-height: 16.8vw;
-        --gap: 1.5vw;
-      }
-    }
-
-    body {
-      background-color: var(--main-green);
-      font-family: 'Inter', sans-serif;
-      color: var(--light-text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px 0;
-      margin: 0;
-      user-select: none;
-      overflow-x: hidden;
-    }
-
-    .game-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      width: 100%;
-      max-width: 800px;
-      /* BAŞLANGIÇTA OYUNU GİZLE */
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    /* OYUNCU GİRİŞ YAPTIKTAN SONRA GÖSTER */
-    .game-container.active {
-      opacity: 1;
-    }
-
-    /* Farcaster Engelleme Katmanı */
-    #farcaster-wall {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--dark-green);
-      color: var(--light-text);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 3000;
-      text-align: center;
-      padding: 20px;
-      gap: 20px;
-    }
-
-    #farcaster-wall.hidden {
-      display: none;
-    }
-
-    #farcaster-wall h2 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    #farcaster-wall p {
-      font-size: 1.1rem;
-    }
-
-    /* Geri kalan CSS stilleri (Değiştirilmedi) */
-    h1 {
-      font-size: 2.5rem;
-      margin: 0;
-      font-weight: 700;
-    }
-
-    .score-display {
-      background-color: var(--dark-green);
-      padding: 8px 24px;
-      border-radius: var(--border-radius);
-      font-size: 1.2rem;
-      font-weight: 700;
-      border: 2px solid rgba(255,255,255,0.2);
-    }
-
-    .top-piles {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      padding: 0 var(--gap);
-      box-sizing: border-box;
-    }
-
-    .stock-waste-piles {
-      display: flex;
-      gap: var(--gap);
-    }
-
-    .foundation-piles {
-      display: flex;
-      gap: var(--gap);
-    }
-
-    .tableau-piles {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      gap: var(--gap);
-      padding: 0 var(--gap);
-      box-sizing: border-box;
-      min-height: calc(var(--card-height) * 1.5); /* Provide space for cards */
-    }
-
-    .pile {
-      width: var(--card-width);
-      height: var(--card-height);
-      position: relative;
-    }
-
-    .pile.tableau {
-      height: auto; /* Tableau piles grow downwards */
-    }
-
-    .pile-placeholder {
-      width: var(--card-width);
-      height: var(--card-height);
-      border: 2px solid var(--dark-green);
-      border-radius: var(--border-radius);
-      box-sizing: border-box;
-    }
-
-    #stock .pile-placeholder {
-      cursor: pointer;
-    }
-
-    .card {
-      width: var(--card-width);
-      height: var(--card-height);
-      background-color: white;
-      border: 1px solid #CCC;
-      border-radius: var(--border-radius);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 4px;
-      box-sizing: border-box;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .card.face-down {
-      background-image: linear-gradient(45deg, #1d4ed8 25%, transparent 25%), linear-gradient(-45deg, #1d4ed8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1d4ed8 75%), linear-gradient(-45deg, transparent 75%, #1d4ed8 75%);
-      background-size: 20px 20px;
-      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-      background-color: #2563eb;
-      border: 1px solid #1e40af;
-    }
-
-    .card.face-down .rank, .card.face-down .suit {
-      display: none;
-    }
-
-    .card.red { color: var(--red-suit); }
-    .card.black { color: var(--black-suit); }
-
-    .rank {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-    .suit {
-      font-size: 1.1rem;
-      align-self: flex-end;
-    }
-
-    .tableau .card {
-      top: auto;
-      position: relative;
-      margin-bottom: -90px;
-    }
-
-    .tableau .card.face-up {
-      margin-bottom: -80px;
-    }
-
-    .tableau .card:last-child {
-      margin-bottom: 0;
-    }
-
-    #waste .card:not(:last-child) {
-      pointer-events: none;
-    }
-
-    .card.dragging {
-      opacity: 0.5;
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-      align-items: center;
-    }
-
-    .control-btn, .new-game-btn {
-      background-color: var(--dark-blue);
-      color: var(--light-text);
-      border: none;
-      padding: 12px 24px;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .control-btn:hover, .new-game-btn:hover {
-      background-color: var(--dark-blue-hover);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease-in-out;
-    }
-
-    .modal-overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-content {
-      background-color: var(--light-text);
-      color: var(--dark-green);
-      padding: 30px 40px;
-      border-radius: 16px;
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
-    }
-
-    .modal-content h2 {
-      font-size: 2.5rem;
-      margin: 0 0 10px 0;
-    }
-
-    .modal-content p {
-      font-size: 1.2rem;
-      margin: 0 0 20px 0;
-    }
-
-    #current-player-status {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
-
-    #leaderboard-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-
-    #leaderboard-table th, #leaderboard-table td {
-      padding: 8px;
-      text-align: left;
-    }
-
-    #leaderboard-table th {
-      border-bottom: 2px solid var(--dark-green);
-    }
-    #leaderboard-table td:first-child, #leaderboard-table td:last-child {
-      text-align: center;
-    }
-
-  </style>
-</head>
-<body>
-<div id="farcaster-wall">
-  <h2>Farcaster Girişi Gerekli</h2>
-  <p>Lütfen Solitaire oynamaya başlamak ve skorunuzu kaydetmek için Farcaster hesabınızla giriş yapın.</p>
-  <button id="farcaster-login-btn-wall" class="control-btn" style="font-size: 1.2rem; padding: 15px 30px;">
-    Farcaster ile Giriş Yap
-  </button>
-</div>
-
-<div class="game-container" id="game-container">
-  <h1>Solitaire</h1>
-  <div class="score-display">Score: 0</div>
-
-  <div id="current-player-status"></div>
-
-  <div class="top-piles">
-    <div class="stock-waste-piles">
-      <div id="stock" class="pile">
-        <div class="pile-placeholder"></div>
-      </div>
-      <div id="waste" class="pile">
-        <div class="pile-placeholder"></div>
-      </div>
-    </div>
-    <div class="foundation-piles">
-      <div id="foundation-0" class="pile foundation"><div class="pile-placeholder"></div></div>
-      <div id="foundation-1" class="pile foundation"><div class="pile-placeholder"></div></div>
-      <div id="foundation-2" class="pile foundation"><div class="pile-placeholder"></div></div>
-      <div id="foundation-3" class="pile foundation"><div class="pile-placeholder"></div></div>
-    </div>
-  </div>
-
-  <div class="tableau-piles">
-    <div id="tableau-0" class="pile tableau"></div>
-    <div id="tableau-1" class="pile tableau"></div>
-    <div id="tableau-2" class="pile tableau"></div>
-    <div id="tableau-3" class="pile tableau"></div>
-    <div id="tableau-4" class="pile tableau"></div>
-    <div id="tableau-5" class="pile tableau"></div>
-    <div id="tableau-6" class="pile tableau"></div>
-  </div>
-
-  <div class="controls">
-    <button class="new-game-btn">New Game</button>
-    <button id="leaderboard-btn" class="control-btn">Leaderboard</button>
-    <button id="auto-finish-btn" class="control-btn" style="display: none;">Auto-Finish</button>
-  </div>
-</div>
-
-<div id="win-modal" class="modal-overlay">
-  <div class="modal-content">
-    <h2>You Win!</h2>
-    <p id="final-score"></p>
-    <p>Score saved for: <span id="winning-player-name"></span></p>
-    <button class="new-game-btn play-again-btn">Play Again</button>
-  </div>
-</div>
-
-<div id="leaderboard-modal" class="modal-overlay">
-  <div class="modal-content">
-    <h2>Leaderboard (Accumulated Score)</h2>
-    <table id="leaderboard-table">
-      <thead><tr><th>Rank</th><th>Name</th><th>Total Score</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <button id="close-leaderboard-btn" class="control-btn">Close</button>
-  </div>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const SUITS = ["♠", "♣", "♥", "♦"];
-    const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-    const ACCUMULATED_SCORES_KEY = 'solitaireAccumulatedScores';
-
-    const stockPile = document.getElementById('stock');
-    const wastePile = document.getElementById('waste');
-    const foundationPiles = document.querySelectorAll('.foundation');
-    const tableauPiles = document.querySelectorAll('.tableau');
-    const scoreDisplay = document.querySelector('.score-display');
-    const newGameButtons = document.querySelectorAll('.new-game-btn');
-    const gameContainer = document.getElementById('game-container');
-
-    const winModal = document.getElementById('win-modal');
-    const finalScoreDisplay = document.getElementById('final-score');
-    const winningPlayerNameDisplay = document.getElementById('winning-player-name');
-
-    const leaderboardBtn = document.getElementById('leaderboard-btn');
-    const leaderboardModal = document.getElementById('leaderboard-modal');
-    const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
-    const leaderboardTableBody = leaderboardModal.querySelector('tbody');
-
-    const autoFinishBtn = document.getElementById('auto-finish-btn');
-    const currentPlayerStatus = document.getElementById('current-player-status');
-    const farcasterWall = document.getElementById('farcaster-wall');
-    const farcasterLoginBtnWall = document.getElementById('farcaster-login-btn-wall');
-
-    let deck = [];
-    let score = 0;
-    let cardIdCounter = 0;
-    let draggedCards = [];
-    let isGameActive = false;
-
-    // YENİ: Başlangıçta Farcaster girişi gerekli
-    let currentPlayerId = 'Requires Farcaster';
-
-    /* -------------------------------------------------------------------------- */
-    /* SKOR YÖNETİM FONKSİYONLARI                       */
-    /* -------------------------------------------------------------------------- */
-
-    function updatePlayerStatus() {
-      currentPlayerStatus.textContent = `Playing as: ${currentPlayerId}`;
-    }
-
-    function saveAccumulatedScore(playerId, newScore) {
-      if (playerId === 'Requires Farcaster' || newScore <= 0) return; // İsimsiz oyuncuyu engelle
-
-      const scores = JSON.parse(localStorage.getItem(ACCUMULATED_SCORES_KEY)) || {};
-
-      scores[playerId] = (scores[playerId] || 0) + newScore;
-
-      localStorage.setItem(ACCUMULATED_SCORES_KEY, JSON.stringify(scores));
-    }
-
-    function handleGameEndOrReset(isWin = false) {
-      if (currentPlayerId === 'Requires Farcaster' || (!isGameActive && score === 0)) return;
-
-      saveAccumulatedScore(currentPlayerId, score);
-
-      isGameActive = false;
-    }
-
-    function updateScore(points, absolute = false) {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      if(absolute) score = points;
-      else score += points;
-      if (score < 0) score = 0;
-      scoreDisplay.textContent = `Score: ${score}`;
-
-      if (points !== 0) isGameActive = true;
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /* OYUN FONKSİYONLARI                           */
-    /* -------------------------------------------------------------------------- */
-
-
-    function createDeck() {
-      deck = [];
-      for (const suit of SUITS) {
-        for (const rank of RANKS) {
-          deck.push({
-            suit,
-            rank,
-            color: (suit === "♥" || suit === "♦") ? 'red' : 'black',
-            value: RANKS.indexOf(rank) + 1,
-            isFaceUp: false
-          });
-        }
-      }
-    }
-
-    function shuffleDeck() {
-      for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-      }
-    }
-
-    function createCardElement(cardData) {
-      const card = document.createElement('div');
-      card.id = `card-${cardIdCounter++}`;
-      card.classList.add('card', cardData.color);
-      if (!cardData.isFaceUp) {
-        card.classList.add('face-down');
-      } else {
-        card.draggable = true;
-      }
-      card.dataset.rank = cardData.rank;
-      card.dataset.suit = cardData.suit;
-      card.dataset.value = cardData.value;
-      card.dataset.color = cardData.color;
-
-      const rank = document.createElement('div');
-      rank.classList.add('rank');
-      rank.textContent = cardData.rank;
-
-      const suit = document.createElement('div');
-      suit.classList.add('suit');
-      suit.textContent = cardData.suit;
-
-      card.appendChild(rank);
-      card.appendChild(suit);
-
-      card.addEventListener('dragstart', onDragStart);
-      card.addEventListener('dragend', onDragEnd);
-      card.addEventListener('dblclick', onCardDoubleClick);
-      return card;
-    }
-
-    function dealCards() {
-      for (let i = 0; i < 7; i++) {
-        for (let j = 0; j <= i; j++) {
-          const cardData = deck.pop();
-          if (j === i) {
-            cardData.isFaceUp = true;
-          }
-          const cardElement = createCardElement(cardData);
-          tableauPiles[i].appendChild(cardElement);
-        }
-      }
-      deck.forEach(cardData => {
-        const cardElement = createCardElement(cardData);
-        stockPile.appendChild(cardElement);
-      });
-
-      if(stockPile.querySelector('.pile-placeholder')) {
-        stockPile.querySelector('.pile-placeholder').style.display = 'none';
-      }
-    }
-
-    function resetGame() {
-      if (currentPlayerId === 'Requires Farcaster') return; // Farcaster girişi yoksa oyunu başlatma
-
-      handleGameEndOrReset(false);
-
-      cardIdCounter = 0;
-      [stockPile, wastePile, ...foundationPiles, ...tableauPiles].forEach(pile => {
-        pile.innerHTML = '';
-        if (pile.classList.contains('foundation') || pile.id === 'waste' || pile.id === 'stock') {
-          pile.innerHTML = '<div class="pile-placeholder"></div>';
-        }
-      });
-
-      winModal.classList.remove('show');
-      leaderboardModal.classList.remove('show');
-      autoFinishBtn.style.display = 'none';
-
-      winningPlayerNameDisplay.textContent = currentPlayerId;
-
-      updateScore(0, true);
-      isGameActive = false;
-      createDeck();
-      shuffleDeck();
-      dealCards();
-      gameContainer.classList.add('active'); // Oyunu görünür yap
-    }
-
-    function checkWinCondition() {
-      if (currentPlayerId === 'Requires Farcaster') return false;
-
-      let totalFoundationCards = 0;
-      foundationPiles.forEach(pile => {
-        totalFoundationCards += pile.querySelectorAll('.card').length;
-      });
-      if (totalFoundationCards === 52) {
-        finalScoreDisplay.textContent = `Final Score: ${score}`;
-        winningPlayerNameDisplay.textContent = currentPlayerId;
-        winModal.classList.add('show');
-
-        handleGameEndOrReset(true);
-
-        autoFinishBtn.style.display = 'none';
-        return true;
-      }
-      return false;
-    }
-
-    function showLeaderboard() {
-      const accumulatedScores = JSON.parse(localStorage.getItem(ACCUMULATED_SCORES_KEY)) || {};
-
-      const sortedScores = Object.entries(accumulatedScores)
-              .map(([name, score]) => ({ name, score }))
-              .sort((a, b) => b.score - a.score);
-
-      leaderboardTableBody.innerHTML = '';
-
-      sortedScores.slice(0, 10).forEach((scoreEntry, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${index + 1}</td><td>${scoreEntry.name}</td><td>${scoreEntry.score}</td>`;
-        leaderboardTableBody.appendChild(row);
-      });
-      leaderboardModal.classList.add('show');
-    }
-
-    function validateMove(cardsToMove, destPile) {
-      if (destPile === cardsToMove[0].parentElement) return false;
-      const topCardToMove = cardsToMove[0];
-
-      if (destPile.classList.contains('foundation')) {
-        if (cardsToMove.length > 1) return false;
-        const foundationTopCard = destPile.lastElementChild;
-        if(foundationTopCard && foundationTopCard.classList.contains('pile-placeholder')){
-          return topCardToMove.dataset.value === '1'; // Ace
-        }
-        if (!foundationTopCard && topCardToMove.dataset.value === '1') return true;
-        if (foundationTopCard &&
-                foundationTopCard.dataset.suit === topCardToMove.dataset.suit &&
-                parseInt(foundationTopCard.dataset.value) + 1 === parseInt(topCardToMove.dataset.value)) {
-          return true;
-        }
-      }
-
-      if (destPile.classList.contains('tableau')) {
-        const tableauTopCard = destPile.lastElementChild;
-        if (!tableauTopCard) { // Empty tableau
-          return topCardToMove.dataset.rank === 'K';
-        }
-        if (tableauTopCard.dataset.color !== topCardToMove.dataset.color &&
-                parseInt(tableauTopCard.dataset.value) === parseInt(topCardToMove.dataset.value) + 1) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    function moveCards(cards, fromPile, toPile) {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      cards.forEach(card => toPile.appendChild(card));
-
-      if (toPile.classList.contains('foundation')) updateScore(10);
-      else if (fromPile.id === 'waste' && toPile.classList.contains('tableau')) updateScore(5);
-      else if (fromPile.classList.contains('foundation') && toPile.classList.contains('tableau')) updateScore(-15);
-
-      if(fromPile.classList.contains('tableau') && fromPile.children.length > 0) {
-        const topCard = fromPile.lastElementChild;
-        if (topCard.classList.contains('face-down')) {
-          topCard.classList.remove('face-down');
-          topCard.draggable = true;
-          updateScore(5);
-        }
-      }
-
-      if (fromPile.id === 'waste') {
-        const newWasteTopCard = fromPile.lastElementChild;
-        if (newWasteTopCard && !newWasteTopCard.classList.contains('pile-placeholder')) {
-          newWasteTopCard.draggable = true;
-        }
-      }
-
-      if(checkWinCondition()) return;
-      checkForWinnableState();
-    }
-
-    function drawFromStock() {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      const currentWasteTopCard = wastePile.lastElementChild;
-      if (currentWasteTopCard && !currentWasteTopCard.classList.contains('pile-placeholder')) {
-        currentWasteTopCard.draggable = false;
-      }
-
-      if (stockPile.children.length > 1) { // 1 for placeholder
-        const card = stockPile.lastElementChild;
-        card.classList.remove('face-down');
-        card.draggable = true;
-        wastePile.appendChild(card);
-        if(wastePile.querySelector('.pile-placeholder')) wastePile.querySelector('.pile-placeholder').style.display = 'none';
-      } else {
-        const wasteCards = Array.from(wastePile.querySelectorAll('.card')).reverse();
-        wasteCards.forEach(card => {
-          card.classList.add('face-down');
-          card.draggable = false;
-          stockPile.appendChild(card);
-        });
-        if(wastePile.querySelector('.pile-placeholder')) wastePile.querySelector('.pile-placeholder').style.display = 'block';
-
-        if(wastePile.querySelector('.pile-placeholder')) wastePile.querySelector('.pile-placeholder').style.display = 'block';
-      }
-
-      if(stockPile.children.length > 1 && stockPile.querySelector('.pile-placeholder')) stockPile.querySelector('.pile-placeholder').style.display = 'none';
-      else if (stockPile.children.length <=1 && stockPile.querySelector('.pile-placeholder')) stockPile.querySelector('.pile-placeholder').style.display = 'block';
-    }
-
-    function onDragStart(e) {
-      if (currentPlayerId === 'Requires Farcaster') { e.preventDefault(); return; }
-
-      const draggedCard = e.target;
-      if (draggedCard.classList.contains('face-down')) { e.preventDefault(); return; }
-
-      const pile = draggedCard.parentElement;
-
-      if (pile.classList.contains('tableau')) {
-        const allCards = Array.from(pile.children);
-        const draggedIndex = allCards.indexOf(draggedCard);
-        draggedCards = allCards.slice(draggedIndex);
-      } else {
-        draggedCards = [draggedCard];
-      }
-
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', draggedCard.id);
-      setTimeout(() => { draggedCards.forEach(c => c.classList.add('dragging')); }, 0);
-    }
-
-    function onDragOver(e) { e.preventDefault(); }
-
-    function onDrop(e) {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      e.preventDefault();
-      const destPile = e.currentTarget;
-      if (!draggedCards || draggedCards.length === 0) return;
-      const sourcePile = draggedCards[0].parentElement;
-      if (validateMove(draggedCards, destPile)) {
-        moveCards(draggedCards, sourcePile, destPile);
-      }
-    }
-
-    function onDragEnd() {
-      draggedCards.forEach(c => c.classList.remove('dragging'));
-      draggedCards = [];
-    }
-
-    function onCardDoubleClick(e) {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      const card = e.currentTarget;
-      const sourcePile = card.parentElement;
-      if (card !== sourcePile.lastElementChild) return;
-      for (const foundationPile of foundationPiles) {
-        if (validateMove([card], foundationPile)) {
-          moveCards([card], sourcePile, foundationPile);
-          break;
-        }
-      }
-    }
-
-    function checkForWinnableState() {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      const faceDownCards = document.querySelectorAll('.tableau .card.face-down');
-      if (stockPile.children.length <= 1 && faceDownCards.length === 0) {
-        autoFinishBtn.style.display = 'inline-block';
-      } else {
-        autoFinishBtn.style.display = 'none';
-      }
-    }
-
-    function startAutoComplete() {
-      if (currentPlayerId === 'Requires Farcaster') return;
-
-      autoFinishBtn.disabled = true;
-      const autoMoveInterval = setInterval(() => {
-        let cardMoved = false;
-
-        const movableCards = [...tableauPiles, wastePile].map(p => p.lastElementChild).filter(c => c && !c.classList.contains('pile-placeholder'));
-
-        for(const card of movableCards) {
-          for (const foundationPile of foundationPiles) {
-            if (validateMove([card], foundationPile)) {
-              moveCards([card], card.parentElement, foundationPile);
-              cardMoved = true;
-              break;
-            }
-          }
-          if(cardMoved) break;
-        }
-
-        if (!cardMoved) {
-          clearInterval(autoMoveInterval);
-          autoFinishBtn.disabled = false;
-        }
-      }, 150);
-    }
-
-    // Farcaster Giriş Simülasyonu
-    farcasterLoginBtnWall.addEventListener('click', () => {
-      const simulatedUsername = prompt("Farcaster Kullanıcı Adınızı Girin (Örn: @kullaniciadi)");
-      if (simulatedUsername && simulatedUsername.trim() !== "") {
-        // Mevcut oyunu kaydet (Bu kısım zaten 'Requires Farcaster' olduğu için bir şey kaydetmeyecek)
-        handleGameEndOrReset(false);
-
-        // Yeni kullanıcıyı ayarla
-        currentPlayerId = simulatedUsername.trim();
-        updatePlayerStatus();
-        farcasterWall.classList.add('hidden'); // Duvarı kaldır
-        resetGame(); // Oyunu başlat
-        // alert(`Başarıyla giriş yapıldı: ${currentPlayerId}. Yeni bir oyuna başlayabilirsiniz.`);
-      }
-    });
-
-
-    // Event Listeners
-    newGameButtons.forEach(btn => btn.addEventListener('click', resetGame));
-
-    [...foundationPiles, ...tableauPiles].forEach(pile => {
-      pile.addEventListener('dragover', onDragOver);
-      pile.addEventListener('drop', onDrop);
-    });
-
-    stockPile.addEventListener('click', drawFromStock);
-    autoFinishBtn.addEventListener('click', startAutoComplete);
-    leaderboardBtn.addEventListener('click', showLeaderboard);
-    closeLeaderboardBtn.addEventListener('click', () => leaderboardModal.classList.remove('show'));
-
-    // Başlangıçta sadece Farcaster Wall görünür.
-    updatePlayerStatus();
-    // resetGame() çağrılmıyor, ilk oyun Farcaster girişiyle başlayacak.
-  });
-</script>
-</body>
-</html>
+:root {
+  --card-width: 80px;
+  --card-height: 112px;
+  --gap: 10px;
+  --border-radius: 8px;
+  --main-green: #0A5323;
+  --dark-green: #08401B;
+  --light-text: #FFFFFF;
+  --dark-blue: #2A4C6B;
+  --dark-blue-hover: #3B6A96;
+  --red-suit: #D92D20;
+  --black-suit: #1D2939;
+  --selected-outline: #FDB022;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --card-width: 12vw;
+    --card-height: 16.8vw;
+    --gap: 1.5vw;
+  }
+}
+
+body {
+  background-color: var(--main-green);
+  font-family: 'Inter', sans-serif;
+  color: var(--light-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px 0;
+  margin: 0;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 800px;
+  /* BAŞLANGIÇTA OYUNU GİZLE */
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+/* OYUNCU GİRİŞ YAPTIKTAN SONRA GÖSTER */
+.game-container.active {
+  opacity: 1;
+}
+
+/* Farcaster Engelleme Katmanı */
+#farcaster-wall {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--dark-green);
+  color: var(--light-text);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  text-align: center;
+  padding: 20px;
+  gap: 20px;
+}
+
+#farcaster-wall.hidden {
+  display: none;
+}
+
+#farcaster-wall h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+#farcaster-wall p {
+  font-size: 1.1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.score-display {
+  background-color: var(--dark-green);
+  padding: 8px 24px;
+  border-radius: var(--border-radius);
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.top-piles {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 var(--gap);
+  box-sizing: border-box;
+}
+
+.stock-waste-piles {
+  display: flex;
+  gap: var(--gap);
+}
+
+.foundation-piles {
+  display: flex;
+  gap: var(--gap);
+}
+
+.tableau-piles {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: var(--gap);
+  padding: 0 var(--gap);
+  box-sizing: border-box;
+  min-height: calc(var(--card-height) * 1.5); /* Provide space for cards */
+}
+
+.pile {
+  width: var(--card-width);
+  height: var(--card-height);
+  position: relative;
+}
+
+.pile.tableau {
+  height: auto; /* Tableau piles grow downwards */
+}
+
+.pile-placeholder {
+  width: var(--card-width);
+  height: var(--card-height);
+  border: 2px solid var(--dark-green);
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+}
+
+#stock .pile-placeholder {
+  cursor: pointer;
+}
+
+.card {
+  width: var(--card-width);
+  height: var(--card-height);
+  background-color: white;
+  border: 1px solid #CCC;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.card.face-down {
+  background-image: linear-gradient(45deg, #1d4ed8 25%, transparent 25%), linear-gradient(-45deg, #1d4ed8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1d4ed8 75%), linear-gradient(-45deg, transparent 75%, #1d4ed8 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-color: #2563eb;
+  border: 1px solid #1e40af;
+}
+
+.card.face-down .rank, .card.face-down .suit {
+  display: none;
+}
+
+.card.red { color: var(--red-suit); }
+.card.black { color: var(--black-suit); }
+
+.rank {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.suit {
+  font-size: 1.1rem;
+  align-self: flex-end;
+}
+
+.tableau .card {
+  top: auto;
+  position: relative;
+  margin-bottom: -90px;
+}
+
+.tableau .card.face-up {
+  margin-bottom: -80px;
+}
+
+.tableau .card:last-child {
+  margin-bottom: 0;
+}
+
+#waste .card:not(:last-child) {
+  pointer-events: none;
+}
+
+.card.dragging {
+  opacity: 0.5;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.control-btn, .new-game-btn {
+  background-color: var(--dark-blue);
+  color: var(--light-text);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-btn:hover, .new-game-btn:hover {
+  background-color: var(--dark-blue-hover);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background-color: var(--light-text);
+  color: var(--dark-green);
+  padding: 30px 40px;
+  border-radius: 16px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+.modal-content h2 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+}
+
+.modal-content p {
+  font-size: 1.2rem;
+  margin: 0 0 20px 0;
+}
+
+#current-player-status {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+#leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+#leaderboard-table th, #leaderboard-table td {
+  padding: 8px;
+  text-align: left;
+}
+
+#leaderboard-table th {
+  border-bottom: 2px solid var(--dark-green);
+}
+#leaderboard-table td:first-child, #leaderboard-table td:last-child {
+  text-align: center;
+}
