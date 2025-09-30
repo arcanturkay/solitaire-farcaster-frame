@@ -460,10 +460,13 @@ export default function GamePage() {
     // Event Listeners
     newGameButtons.forEach(btn => btn.addEventListener('click', resetGame));
 
-    ([...(foundationPiles as unknown as HTMLElement[]), ...(tableauPiles as unknown as HTMLElement[])]).forEach(pile => {
-    // pile artık güvenle HTMLElement'dir.
-    pile.addEventListener('dragover', onDragOver);
-    pile.addEventListener('drop', onDrop);
+    [...foundationPiles, ...tableauPiles].forEach(pile => {
+    // pile'ı forEach döngüsü içinde HTMLElement'a çeviriyoruz.
+    const htmlPile = pile as HTMLElement;
+
+    // Listener fonksiyonlarını genel EventListener tipine dönüştürerek uyumluluğu sağlıyoruz.
+    htmlPile.addEventListener('dragover', onDragOver as unknown as EventListener);
+    htmlPile.addEventListener('drop', onDrop as unknown as EventListener);
     });
 
     stockPile!.addEventListener('click', drawFromStock);
