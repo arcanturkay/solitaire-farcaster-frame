@@ -49,7 +49,7 @@ export default function GamePage() {
     const leaderboardBtn = document.getElementById('leaderboard-btn');
     const leaderboardModal = document.getElementById('leaderboard-modal');
     const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
-    const leaderboardTableBody = leaderboardModal.querySelector('tbody') || null;
+    const leaderboardTableBody = leaderboardModal!.querySelector('tbody');
 
     const autoFinishBtn = document.getElementById('auto-finish-btn');
     const currentPlayerStatus = document.getElementById('current-player-status');
