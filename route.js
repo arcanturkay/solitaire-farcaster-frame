@@ -1,30 +1,57 @@
 import { NextResponse } from 'next/server';
+import { URLSearchParams } from 'url';
 
-// Domain adınızı burada güncellerseniz, Frame URL'leri otomatik güncellenecektir.
-const BASE_URL = "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app";
+// GÜNCELLENDİ: Ana domain adınız
+const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
 const API_ROUTE = `${BASE_URL}/api/start-game`;
 
-// Oyunun başlangıç görselinin URL'si (Bu görselin projenizin 'public' klasöründe olduğundan emin olun.)
-const IMAGE_URL = `${BASE_URL}/splash.png`; 
+// Yeşil arka plan rengi (Daha önce konuştuğumuz kırçıllı yeşil)
+const GREEN_COLOR = "#38761D";
 
-// Farcaster Frame meta etiketlerini içeren HTML'i oluşturur.
-function getStartFrameHTML() {
+// Frame görseli artık bir SVG olarak API içinde oluşturuluyor.
+function getStartFrameSVG() {
+  const WIDTH = 1200; // Farcaster standart genişlik
+  const HEIGHT = 630; // Farcaster standart yükseklik
+
+  // Kırçıllı yeşil arka plan ve beyaz metin içeren SVG
+  const svg = `
+    <svg width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${WIDTH}" height="${HEIGHT}" fill="${GREEN_COLOR}"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" fill="white">
+        Farcaster Solitaire Başlangıç Ekranı
+      </text>
+      <text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#EEEEEE">
+        Oyuna Başlamak İçin Butona Tıklayın
+      </text>
+    </svg>
+  `;
+
+  // SVG içeriğini Base64 olarak kodlayıp bir data URL'si oluştururuz
+  const svgBase64 = Buffer.from(svg).toString('base64');
+  return `data:image/svg+xml;base64,${svgBase64}`;
+}
+
+
+function getStartFrameHTML(imageUrl) {
   return `
     <!DOCTYPE html>
     <html>
       <head>
         <title>Solitaire Farcaster</title>
         
-        <!-- FRAME SÜRÜMÜ -->
+        <!-- TÜRKÇE KARAKTER DÜZELTMESİ -->
+        <meta charset="UTF-8">
+
+        <!-- Frame Sürümü -->
         <meta property="fc:frame" content="vNext" />
         
-        <!-- BAŞLANGIÇ GÖRSELİ -->
-        <meta property="fc:frame:image" content="${IMAGE_URL}" />
+        <!-- BAŞLANGIÇ GÖRSELİ (Şimdi SVG Base64 URL'sini kullanıyor) -->
+        <meta property="fc:frame:image" content="${imageUrl}" />
         
-        <!-- POST EDİLECEK ADRES (Butona tıklandığında buraya POST yapılır) -->
+        <!-- POST EDİLECEK ADRES -->
         <meta property="fc:frame:post_url" content="${API_ROUTE}" />
         
-        <!-- BUTON TANIMI: Bu butona tıklayınca POST isteği tetiklenir -->
+        <!-- BUTON: Oyuna Başla -->
         <meta property="fc:frame:button:1" content="Oyuna Başla" />
         <meta property="fc:frame:button:1:action" content="post" />
 
@@ -34,24 +61,23 @@ function getStartFrameHTML() {
   `;
 }
 
-// 1. GET İŞLEYİCİSİ (Frame'in İlk Yüklenmesi ve Preview Tool için GEREKLİ)
+// 1. GET İŞLEYİCİSİ (Frame'in İlk Yüklenmesi ve Preview Tool için)
 export async function GET() {
-    console.log('GET isteği alındı: Frame meta etiketleri döndürülüyor.');
-    return new NextResponse(getStartFrameHTML(), {
+    // Görseli SVG olarak oluştur
+    const svgDataUrl = getStartFrameSVG();
+    
+    // SVG URL'sini kullanarak HTML oluştur ve döndür
+    return new NextResponse(getStartFrameHTML(svgDataUrl), {
         headers: {
-            // Farcaster'ın okuması için içerik tipini HTML olarak ayarlıyoruz.
             'Content-Type': 'text/html', 
         },
     });
 }
 
-// 2. POST İŞLEYİCİSİ (Kullanıcı "Oyuna Başla" butonuna tıkladıktan sonra çalışır)
+// 2. POST İŞLEYİCİSİ (Kullanıcı "Oyuna Başla" butonuna tıkladıktan sonra)
 export async function POST(request) {
-    const body = await request.json();
-    console.log('POST isteği alındı, kullanıcı oyuna yönlendiriliyor.', body);
-    
-    // Farcaster, kullanıcının butona tıkladıktan sonra oyunun gerçek URL'sine yönlendirilmesini sağlar (Mini App).
+    // Kullanıcı butona tıkladığında onu oyunun gerçek URL'sine yönlendirir.
     return NextResponse.redirect(BASE_URL, { 
-        status: 302, // 302: Geçici olarak başka bir adrese yönlendir.
+        status: 302, 
     });
 }
