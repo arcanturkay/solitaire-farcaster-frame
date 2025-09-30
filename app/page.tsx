@@ -56,7 +56,7 @@ export default function GamePage() {
     const farcasterWall = document.getElementById('farcaster-wall');
     const farcasterLoginBtnWall = document.getElementById('farcaster-login-btn-wall');
 
-    let deck = [];
+    let deck: Card[] = []; 
     let score = 0;
     let cardIdCounter = 0;
     let draggedCards = [];
