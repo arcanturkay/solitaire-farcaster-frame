@@ -34,8 +34,6 @@ export default function GamePage() {
   useEffect(() => {
     // DOM yüklendiğinde çalışacak olan kodun TAMAMI buraya gelecek
     
-    // YUKARIDA GÖNDERDİĞİNİZ <script> ETİKETİNİN İÇERİĞİNDEKİ TÜM JAVASCRIPT KODU
-    
     // --- Solitaire Oyununun TÜM JavaScript Kodu Başlangıcı ---
 
     const SUITS = ["♠", "♣", "♥", "♦"];
@@ -61,7 +59,7 @@ export default function GamePage() {
     // Hata Çözümü 1: leaderboardModal'in null olmayacağını belirtmek için '!' eklendi
     const leaderboardTableBody = leaderboardModal!.querySelector('tbody'); 
 
-    const autoFinishBtn = document.getElementById('auto-finish-btn');
+    const autoFinishBtn = document.getElementById('auto-finish-btn') as HTMLButtonElement;
     const currentPlayerStatus = document.getElementById('current-player-status');
     const farcasterWall = document.getElementById('farcaster-wall');
     const farcasterLoginBtnWall = document.getElementById('farcaster-login-btn-wall');
@@ -70,7 +68,7 @@ export default function GamePage() {
     let deck: Card[] = []; 
     let score = 0;
     let cardIdCounter = 0;
-    let draggedCards: HTMLElement[] = [];
+    let draggedCards: HTMLElement[] = []; // Tip tanımlaması yapıldı
     let isGameActive = false;
 
     // YENİ: Başlangıçta Farcaster girişi gerekli
@@ -84,10 +82,10 @@ export default function GamePage() {
       currentPlayerStatus!.textContent = `Playing as: ${currentPlayerId}`;
     }
 
-    function saveAccumulatedScore(playerId: string, newScore: number) { // Tipler eklendi
-      if (playerId === 'Requires Farcaster' || newScore <= 0) return; // İsimsiz oyuncuyu engelle
+    function saveAccumulatedScore(playerId: string, newScore: number) { 
+      if (playerId === 'Requires Farcaster' || newScore <= 0) return; 
 
-      const scores = JSON.parse(localStorage.getItem(ACCUMULATED_SCORES_KEY) || '{}'); // Null kontrolü eklendi
+      const scores = JSON.parse(localStorage.getItem(ACCUMULATED_SCORES_KEY) || '{}'); 
 
       scores[playerId] = (scores[playerId] || 0) + newScore;
 
@@ -102,14 +100,13 @@ export default function GamePage() {
       isGameActive = false;
     }
 
-    function updateScore(points: number, absolute = false) { // Tip eklendi
+    function updateScore(points: number, absolute = false) { 
       if (currentPlayerId === 'Requires Farcaster') return;
 
       if(absolute) score = points;
       else score += points;
       if (score < 0) score = 0;
       scoreDisplay!.textContent = `Score: ${score}`;
-      // scoreDisplay'in null olmayacağını garanti etmek için '!' eklendi
 
       if (points !== 0) isGameActive = true;
     }
@@ -129,13 +126,10 @@ export default function GamePage() {
             color: (suit === "♥" || suit === "♦") ? 'red' : 'black',
             value: RANKS.indexOf(rank) + 1,
             isFaceUp: false
-          } as Card); // TypeScript için tür dönüştürmesi
+          } as Card); 
         }
       }
     }
-
-    // ... (geri kalan tüm fonksiyonlar aynı kaldı) ...
-    // TypeScript hatalarını engellemek için tüm getElementById ve querySelector çağrılarında '!' kullanıldı.
 
     function shuffleDeck() {
       for (let i = deck.length - 1; i > 0; i--) {
@@ -144,7 +138,7 @@ export default function GamePage() {
       }
     }
 
-    function createCardElement(cardData: Card) { // Tip eklendi
+    function createCardElement(cardData: Card) { 
       const card = document.createElement('div');
       card.id = `card-${cardIdCounter++}`;
       card.classList.add('card', cardData.color);
@@ -179,7 +173,7 @@ export default function GamePage() {
       for (let i = 0; i < 7; i++) {
         for (let j = 0; j <= i; j++) {
           const cardData = deck.pop();
-          if (cardData) { // CardData'nın varlığını kontrol et
+          if (cardData) { 
              if (j === i) {
                cardData.isFaceUp = true;
              }
@@ -194,12 +188,13 @@ export default function GamePage() {
       });
 
       if(stockPile!.querySelector('.pile-placeholder')) {
-        stockPile!.querySelector('.pile-placeholder')!.style.display = 'none';
+        (stockPile!.querySelector('.pile-placeholder') as HTMLElement)!.style.display = 'none';
+
       }
     }
 
     function resetGame() {
-      if (currentPlayerId === 'Requires Farcaster') return; // Farcaster girişi yoksa oyunu başlatma
+      if (currentPlayerId === 'Requires Farcaster') return; 
 
       handleGameEndOrReset(false);
 
@@ -222,7 +217,7 @@ export default function GamePage() {
       createDeck();
       shuffleDeck();
       dealCards();
-      gameContainer!.classList.add('active'); // Oyunu görünür yap
+      gameContainer!.classList.add('active'); 
     }
 
     function checkWinCondition() {
@@ -250,7 +245,7 @@ export default function GamePage() {
 
       const sortedScores = Object.entries(accumulatedScores)
               .map(([name, score]) => ({ name, score }))
-              .sort((a, b) => (b.score as number) - (a.score as number)); // Tür dönüştürme
+              .sort((a, b) => (b.score as number) - (a.score as number)); 
 
       leaderboardTableBody!.innerHTML = '';
 
@@ -262,15 +257,13 @@ export default function GamePage() {
       leaderboardModal!.classList.add('show');
     }
 
-    // ... (diğer fonksiyonlar: validateMove, moveCards, drawFromStock, onDragStart, onDragOver, onDrop, onDragEnd, onCardDoubleClick, checkForWinnableState, startAutoComplete) ...
-
-    function validateMove(cardsToMove: HTMLElement[], destPile: HTMLElement) { // Tipler eklendi
+    function validateMove(cardsToMove: HTMLElement[], destPile: HTMLElement) { 
       if (destPile === cardsToMove[0].parentElement) return false;
       const topCardToMove = cardsToMove[0];
 
       if (destPile.classList.contains('foundation')) {
         if (cardsToMove.length > 1) return false;
-        const foundationTopCard = destPile.lastElementChild;
+        const foundationTopCard = destPile.lastElementChild as HTMLElement | null; // Tür dönüştürme yapıldı
         if(foundationTopCard && foundationTopCard.classList.contains('pile-placeholder')){
           return topCardToMove.dataset.value === '1'; // Ace
         }
@@ -283,19 +276,20 @@ export default function GamePage() {
       }
 
       if (destPile.classList.contains('tableau')) {
-        const tableauTopCard = destPile.lastElementChild;
+        const tableauTopCard = destPile.lastElementChild as HTMLElement | null; // Tür dönüştürme yapıldı
         if (!tableauTopCard) { // Empty tableau
           return topCardToMove.dataset.rank === 'K';
         }
-        if (tableauTopCard.dataset.color !== topCardToMove.dataset.color &&
-                parseInt(tableauTopCard.dataset.value!) === parseInt(topCardToMove.dataset.value!) + 1) {
+        // Hata veren satırlar düzeltildi (Non-null Assertion '!' eklendi)
+        if (tableauTopCard!.dataset.color !== topCardToMove.dataset.color &&
+                parseInt(tableauTopCard!.dataset.value!) === parseInt(topCardToMove.dataset.value!) + 1) {
           return true;
         }
       }
       return false;
     }
 
-    function moveCards(cards: HTMLElement[], fromPile: HTMLElement, toPile: HTMLElement) { // Tipler eklendi
+    function moveCards(cards: HTMLElement[], fromPile: HTMLElement, toPile: HTMLElement) { 
       if (currentPlayerId === 'Requires Farcaster') return;
 
       cards.forEach(card => toPile.appendChild(card));
@@ -332,26 +326,26 @@ export default function GamePage() {
         currentWasteTopCard.draggable = false;
       }
 
-      if (stockPile!.children.length > 1) { // 1 for placeholder
+      if (stockPile!.children.length > 1) { 
         const card = stockPile!.lastElementChild as HTMLElement;
         card.classList.remove('face-down');
         card.draggable = true;
         wastePile!.appendChild(card);
-        if(wastePile!.querySelector('.pile-placeholder')) wastePile!.querySelector('.pile-placeholder')!.style.display = 'none';
+        if(wastePile!.querySelector('.pile-placeholder')) (wastePile!.querySelector('.pile-placeholder') as HTMLElement)!.style.display = 'none';
       } else {
-        const wasteCards = Array.from(wastePile!.querySelectorAll('.card')).reverse();
+        const wasteCards = Array.from(wastePile!.querySelectorAll('.card')).reverse() as HTMLElement[];
         wasteCards.forEach(card => {
-          card.classList.add('face-down');
-          card.draggable = false;
-          stockPile!.appendChild(card);
+        card.classList.add('face-down');
+        card.draggable = false;
+        stockPile!.appendChild(card);
         });
-        if(wastePile!.querySelector('.pile-placeholder')) wastePile!.querySelector('.pile-placeholder')!.style.display = 'block';
+        if(wastePile!.querySelector('.pile-placeholder')) (wastePile!.querySelector('.pile-placeholder') as HTMLElement)!.style.display = 'block';
 
-        if(wastePile!.querySelector('.pile-placeholder')) wastePile!.querySelector('.pile-placeholder')!.style.display = 'block';
+        if(wastePile!.querySelector('.pile-placeholder')) (wastePile!.querySelector('.pile-placeholder') as HTMLElement)!.style.display = 'block';
       }
 
-      if(stockPile!.children.length > 1 && stockPile!.querySelector('.pile-placeholder')) stockPile!.querySelector('.pile-placeholder')!.style.display = 'none';
-      else if (stockPile!.children.length <=1 && stockPile!.querySelector('.pile-placeholder')) stockPile!.querySelector('.pile-placeholder')!.style.display = 'block';
+      if(stockPile!.children.length > 1 && stockPile!.querySelector('.pile-placeholder')) (stockPile!.querySelector('.pile-placeholder') as HTMLElement)!.style.display = 'none';
+      else if (stockPile!.children.length <=1 && stockPile!.querySelector('.pile-placeholder')) (stockPile!.querySelector('.pile-placeholder') as HTMLElement)!.style.display = 'block';
     }
 
     function onDragStart(e: DragEvent) {
@@ -466,9 +460,10 @@ export default function GamePage() {
     // Event Listeners
     newGameButtons.forEach(btn => btn.addEventListener('click', resetGame));
 
-    [...foundationPiles, ...tableauPiles].forEach(pile => {
-      pile.addEventListener('dragover', onDragOver);
-      pile.addEventListener('drop', onDrop);
+    ([...(foundationPiles as unknown as HTMLElement[]), ...(tableauPiles as unknown as HTMLElement[])]).forEach(pile => {
+    // pile artık güvenle HTMLElement'dir.
+    pile.addEventListener('dragover', onDragOver);
+    pile.addEventListener('drop', onDrop);
     });
 
     stockPile!.addEventListener('click', drawFromStock);
