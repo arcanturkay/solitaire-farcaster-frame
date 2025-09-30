@@ -70,7 +70,7 @@ export default function GamePage() {
     let deck: Card[] = []; 
     let score = 0;
     let cardIdCounter = 0;
-    let draggedCards = [];
+    let draggedCards: HTMLElement[] = [];
     let isGameActive = false;
 
     // YENİ: Başlangıçta Farcaster girişi gerekli
