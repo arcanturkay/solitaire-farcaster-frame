@@ -3,7 +3,7 @@ import './globals.css';
 
 // VERCEL'DEN ALDIĞINIZ GERÇEK CANLI URL'Yİ BURAYA YAPIŞTIRIN!
 // Örn: https://solitaire-farcaster-frame-xxxx.vercel.app
-const FRAME_URL = "https://vercel.com/arcanturkays-projects/solitaire-farcaster-frame"; 
+const FRAME_URL = "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app"; 
 
 export const metadata = {
   title: 'Farcaster Solitaire',
