@@ -1,0 +1,20 @@
+{
+  "frame": {
+    "name": "solitaire on farcaster",
+    "version": "1",
+    "iconUrl": "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app/icon.png",
+    "homeUrl": "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app",
+    "imageUrl": "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app/splash.png",
+    "splashImageUrl": "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app/splash.png",
+    "splashBackgroundColor": "#38761d",
+    "webhookUrl": "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app/api/webhook",
+    "subtitle": "soliatire",
+    "description": "The classic Solitaire is back now playable directly inside Farcaster.",
+    "primaryCategory": "games"
+  },
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  }
+}

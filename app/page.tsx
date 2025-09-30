@@ -16,20 +16,9 @@ interface Card {
 // Oyun mantığının tamamı useEffect içinde yer alacaktır.
 
 export default function GamePage() {
-
-  // Farcaster girişini simüle eden fonksiyon
-  const farcasterLoginSimulation = () => {
-    const simulatedUsername = prompt("Farcaster Kullanıcı Adınızı Girin (Örn: @kullaniciadi)");
-    if (simulatedUsername && simulatedUsername.trim() !== "") {
-      // Bu işlev, JavaScript'in useEffect içinde tanımlanacak olan resetGame'i çağırır.
-      // Burada sadece simülasyonu başlatması için bir placeholder tutuyoruz.
-      // Gerçek işlevsellik, useEffect içindeki kod çalışmaya başladıktan sonra devreye girecek.
-      alert(`Başarıyla giriş yapıldı: ${simulatedUsername.trim()}. Yeni bir oyun başlatılıyor...`);
-      // Simülasyon başarılı, DOM'u değiştirmek için bir event tetikleyelim.
-      document.dispatchEvent(new CustomEvent('farcasterLoggedIn', { detail: simulatedUsername.trim() }));
-    }
-  };
-
+  
+  // Önceki farcasterLoginSimulation fonksiyonu SİLİNDİ.
+  // Giriş simülasyonu artık sadece useEffect içindeki addEventListener ile yönetiliyor.
 
   useEffect(() => {
     // DOM yüklendiğinde çalışacak olan kodun TAMAMI buraya gelecek
@@ -442,6 +431,7 @@ export default function GamePage() {
 
     // Farcaster Giriş Simülasyonu
     farcasterLoginBtnWall!.addEventListener('click', () => {
+      // YALNIZCA BURADAN TETİKLENECEK
       const simulatedUsername = prompt("Farcaster Kullanıcı Adınızı Girin (Örn: @kullaniciadi)");
       if (simulatedUsername && simulatedUsername.trim() !== "") {
         // Mevcut oyunu kaydet (Bu kısım zaten 'Requires Farcaster' olduğu için bir şey kaydetmeyecek)
@@ -489,7 +479,7 @@ export default function GamePage() {
         <div id="farcaster-wall">
           <h2>Farcaster Girişi Gerekli</h2>
           <p>Lütfen Solitaire oynamaya başlamak ve skorunuzu kaydetmek için Farcaster hesabınızla giriş yapın.</p>
-          <button id="farcaster-login-btn-wall" className="control-btn" style={{fontSize: '1.2rem', padding: '15px 30px'}} onClick={farcasterLoginSimulation}>
+          <button id="farcaster-login-btn-wall" className="control-btn" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
             Farcaster ile Giriş Yap
           </button>
         </div>
