@@ -46,7 +46,8 @@ export default function GamePage() {
     const autoFinishBtn = document.getElementById('auto-finish-btn') as HTMLButtonElement;
     const currentPlayerStatus = document.getElementById('current-player-status');
     const farcasterWall = document.getElementById('farcaster-wall');
-    const farcasterLoginBtnWall = document.getElementById('farcaster-login-btn-wall');
+    // YENİ HALİ: HTMLButtonElement olarak tip dönüştürme (as) eklendi
+    const farcasterLoginBtnWall = document.getElementById('farcaster-login-btn-wall') as HTMLButtonElement;
 
     // Hata Çözümü 2: Tip tanımlaması (Card) eklendi
     let deck: Card[] = []; 
