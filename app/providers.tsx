@@ -1,39 +1,44 @@
+// app/providers.tsx
 'use client';
 
-import * as React from 'react';
-import {
-  RainbowKitProvider,
-  getDefaultConfig,
-  darkTheme, // Karanlık temayı RainbowKit için kullanıyoruz
-} from '@rainbow-me/rainbowkit';
+import React from 'react';
+import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { mainnet, base, zora, optimism } from 'wagmi/chains'; // Farcaster genelde Base üzerinde olduğu için Base'i ekleyelim
+import { base, mainnet } from 'wagmi/chains'; // Base ve Mainnet zincirlerini import edin
+// 🚨 FARCASTER CONNECTOR'I BURADAN İMPORT EDİN
+import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
 
-// 1. Wagmi Config Tanımlanıyor
-const config = getDefaultConfig({
-  appName: 'Farcaster Solitaire',
-  projectId: '4d22f8d532080f5a4d1c3bffcc87ce52', // ⚠️ Buraya kendi WalletConnect Proje ID'nizi eklemelisiniz.
-  chains: [base, mainnet, optimism, zora],
-  ssr: true, // Next.js sunucu tarafında render için
+// 1. Desteklenen Zincirleri ve Bağlantıları Tanımla
+const config = createConfig({
+  // Farcaster genellikle Base zinciri üzerinde çalıştığı için Base'i kullanmak yaygındır
+  chains: [base, mainnet], 
+  
+  // 2. Connector'ları Tanımla
+  connectors: [
+    // 🚨 FARCASTER MİNİ APP CONNECTOR'I EKLE
+    farcasterMiniApp(), // Sınıfı çağırıyoruz: farcasterMiniApp()
+    
+    // İsteğe bağlı olarak diğer connector'ları da ekleyebilirsiniz (ör: Injected, WalletConnect)
+    // injected(), 
+  ],
+  
+  // 3. RPC Transport'ları Tanımla
+  transports: {
+    [base.id]: http(),
+    [mainnet.id]: http(),
+    // Diğer zincirler için de RPC bağlantıları tanımlanabilir
+  },
 });
 
-// 2. React Query Client Tanımlanıyor (RainbowKit ve Wagmi'nin gereksinimi)
+// React Query istemcisini oluştur
 const queryClient = new QueryClient();
 
-// 3. Sağlayıcı Bileşeni (Wrapper)
+// Provider bileşenini oluştur
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider 
-          theme={darkTheme({
-            accentColor: '#4c2d7f', // Farcaster mavisine yakın bir ton
-            borderRadius: 'large',
-          })}
-        >
-          {children}
-        </RainbowKitProvider>
+        {children}
       </QueryClientProvider>
     </WagmiProvider>
   );
