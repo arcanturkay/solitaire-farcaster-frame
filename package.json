@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@farcaster/frame-wagmi-connector": "^1.0.0",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@tanstack/react-query": "^5.90.2",
     "next": "15.5.4",
