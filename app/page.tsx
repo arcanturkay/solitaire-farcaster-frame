@@ -1,8 +1,8 @@
 // app/page.tsx
-'use client'; // Bu, tarayıcıda çalışması için gereklidir!
+'use client'; 
 
 import { useEffect, useRef } from 'react';
-import '../styles/solitaire.css'; // Stil dosyasını içe aktarın
+import '../styles/solitaire.css'; 
 
 // TypeScript derleme hatasını çözmek için Card tipi tanımlandı
 interface Card {
@@ -13,12 +13,7 @@ interface Card {
   isFaceUp: boolean;
 }
 
-// Oyun mantığının tamamı useEffect içinde yer alacaktır.
-
 export default function GamePage() {
-  
-  // Önceki farcasterLoginSimulation fonksiyonu SİLİNDİ.
-  // Giriş simülasyonu artık sadece useEffect içindeki addEventListener ile yönetiliyor.
 
   useEffect(() => {
     // DOM yüklendiğinde çalışacak olan kodun TAMAMI buraya gelecek
@@ -62,6 +57,85 @@ export default function GamePage() {
 
     // YENİ: Başlangıçta Farcaster girişi gerekli
     let currentPlayerId = 'Requires Farcaster';
+    
+    /* -------------------------------------------------------------------------- */
+    /* YENİ: CÜZDAN & FARCASTER ENTEGRASYON FONKSİYONLARI */
+    /* -------------------------------------------------------------------------- */
+
+    async function connectWallet() {
+      if (typeof window.ethereum === 'undefined') {
+        alert('Ethereum cüzdanı (ör: MetaMask) bulunamadı. Lütfen tarayıcı eklentinizi kontrol edin.');
+        return null;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const walletAddress = accounts[0]; 
+        return walletAddress as string;
+      } catch (error) {
+        console.error("Cüzdan bağlama hatası:", error);
+        alert('Cüzdan bağlama işlemi reddedildi.');
+        return null;
+      }
+    }
+
+  // Adım 2: Cüzdan Adresini Farcaster Kullanıcı Adıyla Eşleştirme (GÜVENLİ VERSİYON)
+    async function getFarcasterUsername(walletAddress: string) {
+    try {
+        // İSTEK ARTIK GİZLİ API KEY İÇEREN YEREL SUNUCUNUZA GİDİYOR
+        const response = await fetch(`/api/farcaster?address=${walletAddress}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.warn(`Sunucudan Farcaster API hatası: ${response.status}. Cüzdan adresi kullanılacak.`);
+            // Sunucudan gelen hata durumlarında cüzdan adresine geri dön
+            return walletAddress; 
+        }
+
+        const data = await response.json();
+        
+        // Sunucudan sadece farcasterId alanını alıyoruz
+        return data.farcasterId || walletAddress; 
+
+    } catch (error) {
+        console.error("Sunucuya istek atılırken hata:", error);
+        // Ağ veya bilinmeyen bir hata durumunda cüzdan adresini göster
+        return walletAddress; 
+    }
+    }
+
+    async function handleFarcasterLogin() {
+        const walletAddress = await connectWallet(); 
+        
+        if (!walletAddress) {
+            return;
+        }
+
+        // Yükleniyor durumunu göster
+        farcasterLoginBtnWall!.textContent = 'Kullanıcı Adı Çekiliyor...';
+        farcasterLoginBtnWall!.disabled = true;
+
+        const farcasterId = await getFarcasterUsername(walletAddress);
+
+        handleGameEndOrReset(false);
+
+        // Yeni kullanıcıyı ayarla
+        currentPlayerId = farcasterId;
+        updatePlayerStatus();
+        
+        // Görünümü güncelle
+        farcasterWall!.classList.add('hidden'); 
+        farcasterLoginBtnWall!.textContent = 'Giriş Yapıldı!';
+        farcasterLoginBtnWall!.disabled = false;
+        
+        // Oyunu başlat
+        resetGame();
+    }
+
 
     /* -------------------------------------------------------------------------- */
     /* SKOR YÖNETİM FONKSİYONLARI                       */
@@ -429,22 +503,8 @@ export default function GamePage() {
       }, 150);
     }
 
-    // Farcaster Giriş Simülasyonu
-    farcasterLoginBtnWall!.addEventListener('click', () => {
-      // YALNIZCA BURADAN TETİKLENECEK
-      const simulatedUsername = prompt("Farcaster Kullanıcı Adınızı Girin (Örn: @kullaniciadi)");
-      if (simulatedUsername && simulatedUsername.trim() !== "") {
-        // Mevcut oyunu kaydet (Bu kısım zaten 'Requires Farcaster' olduğu için bir şey kaydetmeyecek)
-        handleGameEndOrReset(false);
-
-        // Yeni kullanıcıyı ayarla
-        currentPlayerId = simulatedUsername.trim();
-        updatePlayerStatus();
-        farcasterWall!.classList.add('hidden'); // Duvarı kaldır
-        resetGame(); // Oyunu başlat
-        // alert(`Başarıyla giriş yapıldı: ${currentPlayerId}. Yeni bir oyuna başlayabilirsiniz.`);
-      }
-    });
+    // YENİ: Farcaster Giriş Simülasyonu yerine gerçek fonksiyonu bağlama
+    farcasterLoginBtnWall!.addEventListener('click', handleFarcasterLogin);
 
 
     // Event Listeners
@@ -477,10 +537,10 @@ export default function GamePage() {
     // body etiketi yerine React'te doğrudan döndürülür
     <>
         <div id="farcaster-wall">
-          <h2>Farcaster Girişi Gerekli</h2>
-          <p>Lütfen Solitaire oynamaya başlamak ve skorunuzu kaydetmek için Farcaster hesabınızla giriş yapın.</p>
+          <h2>Welcome to Farcaster Solitaire</h2>
+          <p>Please connect your wallet before playing Solitaire game ♠ ♣ ♥ ♦</p>
           <button id="farcaster-login-btn-wall" className="control-btn" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-            Farcaster ile Giriş Yap
+            Connect Wallet
           </button>
         </div>
 

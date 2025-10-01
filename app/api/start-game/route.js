@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 
-// Domain adınızı burada güncellerseniz, Frame URL'leri otomatik güncellenecektir.
-const BASE_URL = "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app";
+// ⚠️ DİKKAT: Bu URL'yi uygulamanızın gerçek canlı domain adresiyle güncelleyin.
+// VERCEL'DEN ALDIĞINIZ GERÇEK CANLI URL'Yİ BURAYA YAPIŞTIRIN!
+const BASE_URL = "https://solitaire-farcaster-frame.vercel.app/";
+// Kullanıcı butona tıkladığında isteğin gideceği API yolu. Kendi yolu olduğu için BASE_URL'de kalabilir.
 const API_ROUTE = `${BASE_URL}/api/start-game`;
 
 // Oyunun başlangıç görselinin URL'si (Bu görselin projenizin 'public' klasöründe olduğundan emin olun.)
-const IMAGE_URL = `${BASE_URL}/splash.png`; 
+// Frame'in ilk yüklendiğinde göstereceği görseldir.
+const IMAGE_URL = `${BASE_URL}/start-image.png`; 
 
 // Farcaster Frame meta etiketlerini içeren HTML'i oluşturur.
 function getStartFrameHTML() {
@@ -15,7 +18,7 @@ function getStartFrameHTML() {
       <head>
         <title>Solitaire Farcaster</title>
         
-        <!-- FRAME SÜRÜMÜ -->
+        <!-- Frame'i okuyabilmesi için Farcaster protokol sürümü -->
         <meta property="fc:frame" content="vNext" />
         
         <!-- BAŞLANGIÇ GÖRSELİ -->
@@ -35,6 +38,7 @@ function getStartFrameHTML() {
 }
 
 // 1. GET İŞLEYİCİSİ (Frame'in İlk Yüklenmesi ve Preview Tool için GEREKLİ)
+// Bir Frame, bir sohbette paylaşıldığında, Farcaster client'ı önce bu GET isteğini gönderir.
 export async function GET() {
     console.log('GET isteği alındı: Frame meta etiketleri döndürülüyor.');
     return new NextResponse(getStartFrameHTML(), {
@@ -46,11 +50,14 @@ export async function GET() {
 }
 
 // 2. POST İŞLEYİCİSİ (Kullanıcı "Oyuna Başla" butonuna tıkladıktan sonra çalışır)
+// Frame'de butona tıklandığında bu POST isteği tetiklenir.
 export async function POST(request) {
     const body = await request.json();
-    console.log('POST isteği alındı, kullanıcı oyuna yönlendiriliyor.', body);
     
     // Farcaster, kullanıcının butona tıkladıktan sonra oyunun gerçek URL'sine yönlendirilmesini sağlar (Mini App).
+    // Bu Frame'i oyunun ana URL'sine (BASE_URL) yönlendirir.
+    console.log('POST isteği alındı, kullanıcı oyuna yönlendiriliyor.');
+    
     return NextResponse.redirect(BASE_URL, { 
         status: 302, // 302: Geçici olarak başka bir adrese yönlendir.
     });

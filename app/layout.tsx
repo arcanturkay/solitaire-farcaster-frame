@@ -5,7 +5,7 @@ import "./globals.css";
 
 // VERCEL'DEN ALDIĞINIZ GERÇEK CANLI URL'Yİ BURAYA YAPIŞTIRIN!
 // Örn: https://solitaire-farcaster-frame-xxxx.vercel.app
-const FRAME_URL = "https://solitaire-farcaster-frame-kzcfo3khp-arcanturkays-projects.vercel.app"; 
+const FRAME_URL = "https://solitaire-farcaster-frame.vercel.app/"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
