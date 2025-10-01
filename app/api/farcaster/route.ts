@@ -1,48 +1,53 @@
-// Bu dosyada, API anahtarınızı doğrudan kullanacağız.
-// Güvenlik için, bu anahtarı bir ortam değişkeni (Environment Variable) olarak saklayın.
+// app/api/farcaster/route.ts
+import { NextResponse } from 'next/server';
+
 const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
 
 export async function GET(request: Request) {
-  // 1. İsteğin URL'sinden cüzdan adresini alın
   const { searchParams } = new URL(request.url);
   const walletAddress = searchParams.get('address');
 
   if (!walletAddress) {
-    return new Response(JSON.stringify({ error: 'Missing wallet address' }), { status: 400 });
+    return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
   }
 
   if (!NEYNAR_API_KEY) {
-    return new Response(JSON.stringify({ error: 'Server API key not configured' }), { status: 500 });
+    console.error('NEYNAR_API_KEY is not set in environment variables.');
+    return NextResponse.json({ error: 'Server API key not configured' }, { status: 500 });
   }
 
   try {
-    // 2. Gizli API anahtarını kullanarak Neynar'a istek atın
-    const neynarResponse = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${walletAddress}&viewer_fid=1`, {
+    const neynarResponse = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${walletAddress.toLowerCase()}`, {
       method: 'GET',
       headers: {
-        'api_key': NEYNAR_API_KEY, // ANAHTAR ARTIK SADECE BURADA KULLANILIYOR
+        'api_key': NEYNAR_API_KEY,
         'accept': 'application/json'
       }
     });
 
-    // 3. Neynar'dan gelen yanıtı direkt istemciye geri gönderin
+    if (!neynarResponse.ok) {
+        const errorData = await neynarResponse.json();
+        console.warn(`Neynar API error for address ${walletAddress}:`, errorData);
+        // Hata durumunda bile farcasterId olarak cüzdan adresini yollayalım.
+        return NextResponse.json({ farcasterId: walletAddress });
+    }
+
     const data = await neynarResponse.json();
     
-    if (!neynarResponse.ok) {
-        // Neynar'dan gelen hata durumlarını (404, 401 vb.) iletin
-        return new Response(JSON.stringify(data), { status: neynarResponse.status });
-    }
+    // Neynar'dan gelen verinin yapısı { "users": [ { "username": "...", ... } ] } şeklinde olabilir
+    // Veya adresin altında { "0x...": [ { "username": "...", ... } ] }
+    const users = data.users || (data[walletAddress.toLowerCase()] || []);
 
-    // Kullanıcı adını bulup sadece onu döndürelim
-    let farcasterId = walletAddress;
-    if (data.users && data.users.length > 0) {
-        farcasterId = `@${data.users[0].username}`;
+    if (users && users.length > 0 && users[0].username) {
+        const farcasterId = users[0].username;
+        return NextResponse.json({ farcasterId });
+    } else {
+        // Kullanıcı bulunamazsa, cüzdan adresini ID olarak geri gönder.
+        return NextResponse.json({ farcasterId: walletAddress });
     }
-
-    return new Response(JSON.stringify({ farcasterId }), { status: 200 });
 
   } catch (error) {
-    console.error("Farcaster Sunucu Hatası:", error);
-    return new Response(JSON.stringify({ error: 'Internal server error during Farcaster lookup' }), { status: 500 });
+    console.error("Farcaster API Server Error:", error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
