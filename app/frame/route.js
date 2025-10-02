@@ -3,9 +3,10 @@ import { NextResponse } from "next/server";
 // Next.js otomatik olarak BASE_URL'i alır, ancak Frame'ler için mutlak URL zorunludur.
 // Bu değişkeni kendi Vercel domain'inizle değiştirin.
 const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
-const FRAME_PATH = "/api/frame"; // Yeni FRAME rotası
+// DÜZELTME YAPILDI: Frame'in kendisinin URL'si /frame'dir.
+const FRAME_PATH = "/frame"; 
 
-// İlk Frame: Oyun başlatma ekranı
+// İlk Frame: Oyun başlatma ekranı (GET)
 export async function GET() {
   return new NextResponse(`
     <!DOCTYPE html>
@@ -20,7 +21,7 @@ export async function GET() {
         <meta name="fc:frame:button:1" content="Play Now" />
         <meta name="fc:frame:button:1:action" content="post" />
         
-        <!-- DÜZELTME: POST İSTEĞİ ARTIK YENİ FRAME YOLU OLAN /frame'e GİTMELİ -->
+        <!-- DÜZELTME: POST İSTEĞİ ARTIK KENDİSİNE, YANİ /frame'e GİTMELİ -->
         <meta name="fc:frame:post_url" content="${BASE_URL}${FRAME_PATH}" />
       </head>
       <body>Frame başlangıç sayfası</body>
@@ -31,6 +32,7 @@ export async function GET() {
 }
 
 // Kullanıcı butona bastığında POST handler çalışır (Oyun Başladı)
+// İsteği alan URL: https://solitaire-farcaster-frame.vercel.app/frame
 export async function POST() {
   // Eğer butona basıldığında başka bir Frame göstermek istiyorsanız:
   return new NextResponse(`
@@ -45,6 +47,8 @@ export async function POST() {
         
         <meta name="fc:frame:button:1" content="Open Game" />
         <meta name="fc:frame:button:1:action" content="link" />
+        
+        <!-- Oyunun tamamını oynamak için link veriliyor. Bu doğru. -->
         <meta name="fc:frame:button:1:target" content="${BASE_URL}" />
       </head>
       <body>Oyun başlıyor...</body>
