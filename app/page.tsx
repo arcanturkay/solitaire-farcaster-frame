@@ -1,10 +1,8 @@
-// app/page.tsx
-
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount, useConnect } from 'wagmi';
-// FarcasterMiniApp import'u kaldırıldı, ID'si string olarak kullanılıyor.
+import { useSearchParams } from 'next/navigation'; // ✨ YENİ: URL parametresini çekmek için
 import '../styles/solitaire.css';
 
 // --- OYUN TİPLERİ VE SABİTLERİ ---
@@ -22,6 +20,11 @@ const ACCUMULATED_SCORES_KEY = 'solitaireAccumulatedScores';
 
 // --- ANA BİLEŞEN ---
 export default function GamePage() {
+    
+    // --- URL KOŞULU ---
+    const searchParams = useSearchParams();
+    // FRAME'den gelip gelmediğini kontrol eder. true ise Mini Uygulama başlatılır.
+    const shouldStartApp = searchParams.get('start') === 'true'; 
 
     // --- WAGMI / FARCASTER STATE'LERİ ---
     const { address, isConnected, isConnecting } = useAccount();
@@ -60,57 +63,60 @@ export default function GamePage() {
     const getFarcasterUsername = useCallback(async (walletAddress: string) => {
         setIsLoadingFid(true);
         try {
-            // 🚨 BURASI, FARCASTER KULLANICI ADI/FID ÇEKME BAŞARISIZ OLURSA
-            // CÜZDAN ADRESİNİ GÖSTERMENİZE NEDEN OLUYOR.
-            // API'nizin doğru çalıştığından emin olun.
             const response = await fetch(`/api/farcaster?address=${walletAddress}`);
-
-            // API 200/OK dönse bile içerik boş olabilir
             if (!response.ok) throw new Error("API call failed");
 
             const data = await response.json();
-
-            // Eğer data.farcasterId yoksa, adresi geri döndürür.
             return data.farcasterId || walletAddress;
         } catch (error) {
             console.error("Farcaster ID çekme hatası (API hatası olabilir):", error);
-            // Hata durumunda cüzdan adresini döndürmeye devam et
             return walletAddress;
         } finally {
             setIsLoadingFid(false);
         }
     }, []);
 
-    // 1. ADIM: Sayfa yüklendiğinde otomatik bağlantıyı dene
+    // 1. ADIM: Sayfa yüklendiğinde otomatik bağlantıyı dene (YALNIZCA FRAME'DEN GELMİŞSE)
     useEffect(() => {
+        // ✨ DÜZELTME: shouldStartApp KONTROLÜ EKLENDİ.
+        // Eğer URL'de ?start=true yoksa, otomatik bağlantıyı yapma.
+        if (!shouldStartApp) return; 
+
         if (!isConnected && !isConnecting && !isPending) {
             const FARCASTER_CONNECTOR_ID = 'farcasterMiniApp';
             const fcConnector = connectors.find(c => c.id === FARCASTER_CONNECTOR_ID);
 
             if (fcConnector) {
+                // Sadece Frame'den gelmişse (shouldStartApp true ise) bağlan.
                 connect({ connector: fcConnector });
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // shouldStartApp, URL değiştiğinde tetiklenmeli, bu nedenle bağımlılık olarak eklendi.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [shouldStartApp]); 
 
     // 2. ADIM: Bağlantı kurulunca FID'yi çek ve oyunu başlat
     useEffect(() => {
+        // Bu effect de sadece Mini App modunda çalışmalı.
+        if (!shouldStartApp) return; 
+
         if (isConnected && address && farcasterId === 'Requires Farcaster' && !isLoadingFid) {
             getFarcasterUsername(address).then(id => {
                 setFarcasterId(id);
                 gameState.current.currentPlayerId = id;
 
+                // Bağlantı başarılı, duvarı gizle ve oyunu başlat
                 if (farcasterWallRef.current) farcasterWallRef.current.classList.add('hidden');
                 if (gameContainerRef.current) gameContainerRef.current.classList.add('active');
 
                 if(isGameInitialized) {
+                    // Oyun başlatma mekanizması (eski oyunu resetle)
                     document.querySelector('.new-game-btn')?.dispatchEvent(new MouseEvent('click'));
                 }
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, address, getFarcasterUsername, isLoadingFid, isGameInitialized]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isConnected, address, getFarcasterUsername, isLoadingFid, isGameInitialized, shouldStartApp]);
 
     // Oyuncu durumu gösterimini güncelle
     useEffect(() => {
@@ -127,7 +133,10 @@ export default function GamePage() {
     /* JAVASCRIPT OYUN MANTIĞI (Kapsam/Scope hatası çözüldü) */
     /* -------------------------------------------------------------------------- */
 
+    // Bu effect de sadece Mini App modunda çalışmalı.
     useEffect(() => {
+        if (!shouldStartApp) return; // ✨ YENİ KONTROL
+
         // --- 1. DOM Referanslarını Al ---
         const stockPile = document.getElementById('stock');
         const wastePile = document.getElementById('waste');
@@ -159,7 +168,6 @@ export default function GamePage() {
         }
 
         function createDeck() {
-            // ... (Orijinal createDeck mantığı) ...
             gameState.current.deck = [];
             for (const suit of SUITS) {
                 for (const rank of RANKS) {
@@ -185,7 +193,6 @@ export default function GamePage() {
             const card = document.createElement('div');
             card.id = `card-${gameState.current.cardIdCounter++}`;
 
-            // 🚨 KART YIĞINLAMA İÇİN KRİTİK: 'card' sınıfı her zaman olmalı
             card.classList.add('card', cardData.color);
 
             if (!cardData.isFaceUp) {
@@ -283,7 +290,6 @@ export default function GamePage() {
 
         // --- 3. EVENT LISTENERS KURULUMU ---
 
-        // resetGame artık tanımlandığı için hata vermeyecek
         newGameButtons.forEach(btn => btn.addEventListener('click', resetGame));
 
         [...foundationPiles, ...tableauPiles].forEach(pile => {
@@ -310,12 +316,31 @@ export default function GamePage() {
             // Diğer tüm listener'ları temizleyin...
         };
 
-    }, [farcasterId, isConnected]);
+    // shouldStartApp değişkeni eklendi
+    }, [farcasterId, isConnected, shouldStartApp]);
 
     /* -------------------------------------------------------------------------- */
     /* GÖRÜNÜM (JSX) MANTIĞI */
     /* -------------------------------------------------------------------------- */
 
+    // Eğer Frame'den GELMEDİYSE, Mini Uygulamayı başlatma.
+    if (!shouldStartApp) {
+        // Bu, Farcaster'ın Frame'i render ettiği anda gördüğü içerik olmalıdır.
+        // Amaç: Frame'in butonunu kullanmaya zorlamak.
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+                <h1 className="text-4xl font-bold mb-4">Solitaire Frame</h1>
+                <p className="text-xl text-gray-300 text-center">
+                    Please use the **"Play Now"** button below to launch the Mini App.
+                </p>
+                <p className="text-sm mt-2 text-gray-500">
+                    Direct access is blocked to ensure proper Frame functionality.
+                </p>
+            </div>
+        );
+    }
+
+    // Uygulama Mini App olarak başladıysa (shouldStartApp === true)
     const wallMessage = isConnecting || isPending ? 'Bağlantı Kuruluyor...' : 'Farcaster Cüzdanı gerekli.';
 
     return (
@@ -324,6 +349,7 @@ export default function GamePage() {
             <div
                 id="farcaster-wall"
                 ref={farcasterWallRef}
+                // Duvar, cüzdan bağlantısı başarılıysa veya yükleniyorsa gizlenir.
                 className={farcasterId !== 'Requires Farcaster' ? 'hidden' : ''}
             >
                 <h2>Welcome to Farcaster Solitaire</h2>

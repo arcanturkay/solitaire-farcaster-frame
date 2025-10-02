@@ -7,16 +7,19 @@ const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
 // Bu fonksiyon, kullanıcıyı Frame'den oyunun ana URL'sine yönlendirir.
 export async function POST(request) {
     // Farcaster'dan gelen POST body'yi okuyoruz (işlem yapmasak bile okumalıyız).
-    // Gelen veri Frame'e basan kullanıcı bilgilerini içerir.
     try {
         await request.json(); 
     } catch (e) {
         console.error("Farcaster POST body okuma hatası:", e);
     }
     
+    // Mini Uygulama modunu tetiklemek için ana URL'ye bir sorgu parametresi ekle:
+    // Bu parametre (`?start=true`), page.tsx'in cüzdanı otomatik bağlamasını sağlayacaktır.
+    const redirectUrl = `${BASE_URL}?start=true`; 
+
     // 302 yönlendirmesi ile kullanıcıyı oyunun gerçek URL'sine gönderiyoruz.
-    // Frame akışını başarılı bir şekilde sonlandıran kısımdır.
-    return NextResponse.redirect(BASE_URL, { 
+    // Bu yönlendirme Farcaster'da Mini Uygulama görünümünü tetikler.
+    return NextResponse.redirect(redirectUrl, { 
         status: 302, // 302: Geçici olarak başka bir adrese yönlendir.
     });
 }
