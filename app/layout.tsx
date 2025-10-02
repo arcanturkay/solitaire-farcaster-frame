@@ -1,6 +1,6 @@
 import { Providers } from './providers';
 import type { Metadata } from 'next';
-import GamePage from './page';
+// GamePage import'u RootLayout'ta kullanılmadığı için kaldırıldı.
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -13,15 +13,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </html>
     );
 }
+
+// ⚠️ DİKKAT: Mutlak URL'niz: https://solitaire-farcaster-frame.vercel.app
+const FRAME_BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
+
 export const metadata: Metadata = {
     title: "Solitaire on Farcaster",
     openGraph: {
-        images: ["https://solitaire-farcaster-frame.vercel.app/splash.png"],
+        images: [`${FRAME_BASE_URL}/start-image.png`],
     },
     other: {
         "fc:frame": "vNext",
-        "fc:frame:image": "https://solitaire-farcaster-frame.vercel.app/splash.png",
+        "fc:frame:image": `${FRAME_BASE_URL}/start-image.png`,
         "fc:frame:button:1": "Play Now",
-        "fc:frame:post_url": "https://solitaire-farcaster-frame.vercel.app/api/start",
+        "fc:frame:post_url": `${FRAME_BASE_URL}/api/start-game`,
+        
+        // ✨ YENİ EKLEME: Mini App geçerliliğini ve Frame'in yetkisini onaylar.
+        // Bu, alan adınız Warpcast'te doğrulandığı için önemlidir.
+        "fc:miniapp": FRAME_BASE_URL, 
     },
 };
