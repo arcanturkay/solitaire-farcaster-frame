@@ -7,8 +7,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="en">
         <body>
         <Providers>
-            {children}
-            <GamePage />  {/* Doğrudan render */}
+            {children} {/* Page.js buraya otomatik render olacak */}
         </Providers>
         </body>
         </html>
