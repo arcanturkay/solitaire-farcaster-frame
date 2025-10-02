@@ -1,40 +1,32 @@
 import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Redirects varsa, embed için final URL kullanın
   async redirects() {
     return [
       {
         source: '/old-path',
         destination: '/new-path',
-        permanent: true, // 308
-      },
-      {
-        source: '/temp-path',
-        destination: '/new-temp-path',
-        permanent: false, // 307
-      },
-      {
-        source: '/custom-path',
-        destination: '/new-custom-path',
-        statusCode: 302, // manuel
+        permanent: true,
       },
     ];
   },
 
+  // Header ayarları
   async headers() {
     return [
       {
-        source: '/:path*', // Tüm sayfalara uygulansın
+        source: '/:path*', // Tüm sayfalara uygulanacak
         headers: [
-          // CORS: her yerden erişim
+          // Her yerden erişim (CORS)
           {
             key: 'Access-Control-Allow-Origin',
             value: '*',
           },
-          // Embed izinleri: Farcaster domain’i
+          // Embed izinleri: sadece Farcaster domain’i
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://www.farcaster.com",
+            value: "frame-ancestors https://www.farcaster.com",
           },
         ],
       },
