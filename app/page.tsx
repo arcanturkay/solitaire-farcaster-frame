@@ -316,7 +316,7 @@ export default function GamePage() {
     /* GÖRÜNÜM (JSX) MANTIĞI */
     /* -------------------------------------------------------------------------- */
 
-    const wallMessage = isConnecting || isPending ? 'Connecting to wallet...' : 'Farcaster wallet needed.';
+    const wallMessage = isConnecting || isPending ? 'Bağlantı Kuruluyor...' : 'Farcaster Cüzdanı gerekli.';
 
     return (
         <>

@@ -1,25 +1,27 @@
 import { Providers } from './providers';
 import type { Metadata } from 'next';
+import GamePage from './page';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <Providers>{children}</Providers>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+        <body>
+        <Providers>
+            {children} {/* Page.js buraya otomatik render olacak */}
+        </Providers>
+        </body>
+        </html>
+    );
 }
-
 export const metadata: Metadata = {
-  // Sadece web sitesi başlığı ve openGraph bilgileri kalmalı.
-  title: "Solitaire on Farcaster",
-  openGraph: {
-    images: ["https://solitaire-farcaster-frame.vercel.app/start-image.png"],
-  },
-  
-  // Farcaster Frame etiketleri buradan tamamen kaldırılmıştır
-  // çünkü bu işlevi app/frame/route.js (veya root klasördeki Frame handler) üstlenmiştir.
-  // 'other' objesinin tamamı bu dosyadan silinmelidir.
-  // other: { ... } kısmı silindi.
+    title: "Solitaire on Farcaster",
+    openGraph: {
+        images: ["https://solitaire-farcaster-frame.vercel.app/splash.png"],
+    },
+    other: {
+        "fc:frame": "vNext",
+        "fc:frame:image": "https://solitaire-farcaster-frame.vercel.app/splash.png",
+        "fc:frame:button:1": "Play Now",
+        "fc:frame:post_url": "https://solitaire-farcaster-frame.vercel.app/api/start",
+    },
 };
