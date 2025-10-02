@@ -22,7 +22,6 @@ const ACCUMULATED_SCORES_KEY = 'solitaireAccumulatedScores';
 export default function GameClient() {
     
     // --- URL KOŞULU ---
-    // useSearchParams istemci tarafında çalışır
     const searchParams = useSearchParams();
     const shouldStartApp = searchParams.get('start') === 'true'; 
 
@@ -310,17 +309,24 @@ export default function GameClient() {
     /* -------------------------------------------------------------------------- */
     /* GÖRÜNÜM (JSX) MANTIĞI */
     /* -------------------------------------------------------------------------- */
-
+    
+    // FRAME DIŞI EKRAN: Kullanıcıyı başlatmaya zorlamak için buton ekle
     if (!shouldStartApp) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
                 <h1 className="text-4xl font-bold mb-4">Solitaire Frame</h1>
-                <p className="text-xl text-gray-300 text-center">
-                    Please use the **"Play Now"** button below to launch the Mini App.
+                <p className="text-xl text-gray-300 text-center mb-6">
+                    Ready to play? Click the button below to launch the Solitaire Mini App!
                 </p>
-                <p className="text-sm mt-2 text-gray-500">
-                    Direct access is blocked to ensure proper Frame functionality.
-                </p>
+                <button
+                    className="px-8 py-4 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white text-xl font-extrabold rounded-2xl shadow-2xl shadow-orange-700/80 transition transform duration-300"
+                    onClick={() => {
+                        // Aynı sayfayı ?start=true parametresi ile yeniden yükle
+                        window.location.href = window.location.origin + window.location.pathname + '?start=true';
+                    }}
+                >
+                    Launch Mini App
+                </button>
             </div>
         );
     }
