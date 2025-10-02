@@ -17,7 +17,7 @@ export const metadata = {
     'fc:frame:image': `${FRAME_URL}/start-image.png`, 
     
     // Kullanıcı butona tıkladığında isteği göndereceği API yolu (route.js).
-    'fc:frame:post_url': `${FRAME_URL}/api/farcaster`, 
+    'fc:frame:post_url': `${FRAME_URL}/api/start-game`, 
     
     // Frame'deki ilk butonun metni.
     'fc:frame:button:1': 'Start Game (Farcaster Login)', 
