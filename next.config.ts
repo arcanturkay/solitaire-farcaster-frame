@@ -1,38 +1,42 @@
-import { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
-  // YÖNLENDİRMELER: Farcaster Manifest için 307 Redirect kuralı
-  async redirects() {
-    return [
-      {
-        source: '/.well-known/farcaster/route.ts',
-        // Lütfen bu Destination URL'sinin sizin Farcaster Manifest URL'niz olduğundan emin olun.
-        destination: 'https://api.farcaster.xyz/miniapps/hosted-manifest/0199a180-010f-d7c0-f073-6dcfbba5ed9c', 
-        permanent: false, // 307 (Temporary) redirect için false olmalı.
-        // statusCode: 307, // Next.js 'permanent: false' olduğunda bunu otomatik 307 yapar
-      },
-    ];
-  },
-
-  // CORS ve Güvenlik Başlıkları
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-          // Frame'in sadece Farcaster içinde yerleştirilebileceğini belirten kritik güvenlik kuralı
-          {
-            key: 'Content-Security-Policy',
-            value: "frame-ancestors https://www.farcaster.com",
-          },
-        ],
-      },
-    ];
-  },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    // --- Yönlendirmeyi Rewrites olarak değiştiriyoruz ---
+    async rewrites() {
+        return [
+            {
+                // Manifest yolu her zaman bu şekilde olmalıdır.
+                source: '/.well-known/farcaster.json',
+                // Destination URL'si Farcaster Hosted Manifest adresinizdir.
+                destination: 'https://api.farcaster.xyz/miniapps/hosted-manifest/0199a180-010f-d7c0-f073-6dcfbba5ed9c',
+            },
+        ];
+    },
+    // Farcaster Mini Uygulamasının iFrame'e alınmasını sağlayan KRİTİK güvenlik başlıkları.
+    async headers() {
+        return [
+            {
+                // Tüm yollara uygulanır
+                source: '/(.*)',
+                headers: [
+                    // GEREKLİ: Uygulamanın iFrame'e alınmasına izin verir.
+                    {
+                        key: 'X-Frame-Options',
+                        value: 'ALLOWALL', 
+                    },
+                    {
+                        // GEREKLİ: Mini Uygulama için CSP'yi esnetir ve Farcaster/Warpcast adreslerine izin verir.
+                        key: 'Content-Security-Policy',
+                        value: "frame-ancestors 'self' https://warpcast.com https://miniapps.vercel.app https://frames.warpcast.com",
+                    },
+                    {
+                        key: 'Access-Control-Allow-Origin',
+                        value: '*',
+                    },
+                ],
+            },
+        ];
+    },
+    // redirects fonksiyonunu kaldırıyoruz.
 };
 
-export default nextConfig;
+module.exports = nextConfig;
