@@ -2,13 +2,6 @@
 
 'use client';
 
-export default function Page() {
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <h1>Farcaster Frame Test</h1>
-        </div>
-    );
-}
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount, useConnect } from 'wagmi';
 // FarcasterMiniApp import'u kaldırıldı, ID'si string olarak kullanılıyor.

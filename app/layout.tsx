@@ -1,6 +1,19 @@
 import { Providers } from './providers';
 import type { Metadata } from 'next';
+import GamePage from './page';
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="en">
+        <body>
+        <Providers>
+            {children}
+            <GamePage />  {/* Doğrudan render */}
+        </Providers>
+        </body>
+        </html>
+    );
+}
 export const metadata: Metadata = {
     title: "Solitaire on Farcaster",
     openGraph: {
@@ -13,13 +26,3 @@ export const metadata: Metadata = {
         "fc:frame:post_url": "https://solitaire-farcaster-frame.vercel.app/api/start",
     },
 };
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html lang="en">
-        <body>
-        <Providers>{children}</Providers>
-        </body>
-        </html>
-    );
-}
