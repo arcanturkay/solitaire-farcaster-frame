@@ -1,319 +1,306 @@
+/* styles/solitaire.css */
 :root {
---card-width: 80px;
---card-height: 112px;
---gap: 10px;
---border-radius: 8px;
---main-green: #0A5323;
---dark-green: #08401B;
---light-text: #FFFFFF;
---dark-blue: #2A4C6B;
---dark-blue-hover: #3B6A96;
---red-suit: #D92D20;
---black-suit: #1D2939;
---selected-outline: #FDB022;
+  --card-width: 80px;
+  --card-height: 112px;
+  --gap: 10px;
+  --border-radius: 8px;
+  --main-green: #0A5323;
+  --dark-green: #08401B;
+  --light-text: #FFFFFF;
+  --dark-blue: #2A4C6B;
+  --dark-blue-hover: #3B6A96;
+  --red-suit: #D92D20;
+  --black-suit: #1D2939;
+  --selected-outline: #FDB022;
 }
 
 @media (max-width: 600px) {
-:root {
---card-width: 12vw;
---card-height: 16.8vw;
---gap: 1.5vw;
-}
+  :root {
+    --card-width: 12vw;
+    --card-height: 16.8vw;
+    --gap: 1.5vw;
+  }
 }
 
 body {
-background-color: var(--main-green);
-font-family: 'Inter', sans-serif;
-color: var(--light-text);
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-min-height: 100vh;
-padding: 20px 0;
-margin: 0;
-user-select: none;
-overflow-x: hidden;
+  background-color: var(--main-green);
+  font-family: 'Inter', sans-serif;
+  color: var(--light-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px 0;
+  margin: 0;
+  user-select: none;
+  overflow-x: hidden;
 }
 
 .game-container {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 20px;
-width: 100%;
-max-width: 800px;
-/* BAŞLANGIÇTA OYUNU GİZLE */
-opacity: 0;
-transition: opacity 0.5s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 800px;
+  /* BAŞLANGIÇTA OYUNU GİZLE */
+  opacity: 0;
+  transition: opacity 0.5s;
 }
 
 /* OYUNCU GİRİŞ YAPTIKTAN SONRA GÖSTER */
 .game-container.active {
-opacity: 1;
+  opacity: 1;
 }
 
 /* Farcaster Engelleme Katmanı */
 #farcaster-wall {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background-color: var(--dark-green);
-color: var(--light-text);
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-z-index: 3000;
-text-align: center;
-padding: 20px;
-gap: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--dark-green);
+  color: var(--light-text);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  text-align: center;
+  padding: 20px;
+  gap: 20px;
 }
 
 #farcaster-wall.hidden {
-display: none;
+  display: none;
 }
 
 #farcaster-wall h2 {
-font-size: 2rem;
-margin-bottom: 10px;
+  font-size: 2rem;
+  margin-bottom: 10px;
 }
 
 #farcaster-wall p {
-font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 
 h1 {
-font-size: 2.5rem;
-margin: 0;
-font-weight: 700;
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 700;
 }
 
 .score-display {
-background-color: var(--dark-green);
-padding: 8px 24px;
-border-radius: var(--border-radius);
-font-size: 1.2rem;
-font-weight: 700;
-border: 2px solid rgba(255,255,255,0.2);
+  background-color: var(--dark-green);
+  padding: 8px 24px;
+  border-radius: var(--border-radius);
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.2);
 }
 
 .top-piles {
-display: flex;
-justify-content: space-between;
-width: 100%;
-padding: 0 var(--gap);
-box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 var(--gap);
+  box-sizing: border-box;
 }
 
 .stock-waste-piles {
-display: flex;
-gap: var(--gap);
+  display: flex;
+  gap: var(--gap);
 }
 
 .foundation-piles {
-display: flex;
-gap: var(--gap);
+  display: flex;
+  gap: var(--gap);
 }
 
 .tableau-piles {
-display: flex;
-justify-content: center;
-width: 100%;
-gap: var(--gap);
-padding: 0 var(--gap);
-box-sizing: border-box;
-/* DÜZELTME: Butonların altına kaymaması için dikey boşluk ayarlandı.
-3.5'tan 3.2'ye düşürüldü. */
-min-height: calc(var(--card-height) * 3.2);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: var(--gap);
+  padding: 0 var(--gap);
+  box-sizing: border-box;
+  min-height: calc(var(--card-height) * 1.5); /* Provide space for cards */
 }
 
 .pile {
-width: var(--card-width);
-height: var(--card-height);
-position: relative;
+  width: var(--card-width);
+  height: var(--card-height);
+  position: relative;
 }
 
 .pile.tableau {
-height: auto; /* Tableau piles grow downwards /
-/ DÜZELTME: Kartların absolute pozisyonlanmadığı için, margin/relative
-ile yığınlanırken destenin genişlemesini sağlamalıyız. /
-width: var(--card-width);
-position: relative;
-/ min-height 3.5'tan 3.2'ye düşürüldü. */
-min-height: calc(var(--card-height) * 3.2);
+  height: auto; /* Tableau piles grow downwards */
 }
 
 .pile-placeholder {
-width: var(--card-width);
-height: var(--card-height);
-border: 2px solid var(--dark-green);
-border-radius: var(--border-radius);
-box-sizing: border-box;
+  width: var(--card-width);
+  height: var(--card-height);
+  border: 2px solid var(--dark-green);
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
 }
 
 #stock .pile-placeholder {
-cursor: pointer;
+  cursor: pointer;
 }
 
 .card {
-width: var(--card-width);
-height: var(--card-height);
-background-color: white;
-border: 1px solid #CCC;
-border-radius: var(--border-radius);
-box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-/* Foundation ve Waste için absolute, Tableau için altta override edilecek */
-position: absolute;
-top: 0;
-left: 0;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-padding: 4px;
-box-sizing: border-sizing;
-cursor: pointer;
-transition: all 0.2s ease-in-out;
+  width: var(--card-width);
+  height: var(--card-height);
+  background-color: white;
+  border: 1px solid #CCC;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .card.face-down {
-background-image: linear-gradient(45deg, #1d4ed8 25%, transparent 25%), linear-gradient(-45deg, #1d4ed8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1d4ed8 75%), linear-gradient(-45deg, transparent 75%, #1d4ed8 75%);
-background-size: 20px 20px;
-background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-/* DÜZELTME: Kapalı kart rengi !important ile güçlendirildi */
-background-color: #2563eb !important;
-border: 1px solid #1e40af;
+  background-image: linear-gradient(45deg, #1d4ed8 25%, transparent 25%), linear-gradient(-45deg, #1d4ed8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1d4ed8 75%), linear-gradient(-45deg, transparent 75%, #1d4ed8 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-color: #2563eb;
+  border: 1px solid #1e40af;
 }
 
 .card.face-down .rank, .card.face-down .suit {
-display: none;
+  display: none;
 }
 
 .card.red { color: var(--red-suit); }
 .card.black { color: var(--black-suit); }
 
 .rank {
-font-size: 1.1rem;
-font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 .suit {
-font-size: 1.1rem;
-align-self: flex-end;
+  font-size: 1.1rem;
+  align-self: flex-end;
 }
 
 .tableau .card {
   top: auto;
-  position: relative; /* Tableau yığını için konumlandırmayı değiştiriyoruz */
+  position: relative;
   margin-bottom: -90px;
 }
 
 .tableau .card.face-up {
-margin-bottom: -80px; /* Açık kartlar için daha az çakışma */
+  margin-bottom: -80px;
 }
 
 .tableau .card:last-child {
-margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 #waste .card:not(:last-child) {
-pointer-events: none;
+  pointer-events: none;
 }
 
 .card.dragging {
-opacity: 0.5;
+  opacity: 0.5;
 }
 
 .controls {
-display: flex;
-gap: 10px;
-/* DÜZELTME: Üstten boşluk 20px olarak korundu ve ortalandı. */
-margin-top: 20px;
-margin-bottom: 20px;
-justify-content: center;
-align-items: center;
-width: 100%;
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  align-items: center;
 }
 
 .control-btn, .new-game-btn {
-background-color: var(--dark-blue);
-color: var(--light-text);
-border: none;
-padding: 12px 24px;
-border-radius: var(--border-radius);
-font-size: 1rem;
-font-weight: 700;
-cursor: pointer;
-transition: background-color 0.2s;
+  background-color: var(--dark-blue);
+  color: var(--light-text);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .control-btn:hover, .new-game-btn:hover {
-background-color: var(--dark-blue-hover);
+  background-color: var(--dark-blue-hover);
 }
 
 .modal-overlay {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0,0,0,0.7);
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-z-index: 2000;
-opacity: 0;
-pointer-events: none;
-transition: opacity 0.3s ease-in-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .modal-overlay.show {
-opacity: 1;
-pointer-events: auto;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .modal-content {
-background-color: var(--light-text);
-color: var(--dark-green);
-padding: 30px 40px;
-border-radius: 16px;
-text-align: center;
-width: 90%;
-max-width: 400px;
+  background-color: var(--light-text);
+  color: var(--dark-green);
+  padding: 30px 40px;
+  border-radius: 16px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
 }
 
 .modal-content h2 {
-font-size: 2.5rem;
-margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
 }
 
 .modal-content p {
-font-size: 1.2rem;
-margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  margin: 0 0 20px 0;
 }
 
 #current-player-status {
-font-size: 1rem;
-font-weight: 700;
-margin-bottom: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 15px;
 }
 
 #leaderboard-table {
-width: 100%;
-border-collapse: collapse;
-margin-bottom: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
 }
 
 #leaderboard-table th, #leaderboard-table td {
-padding: 8px;
-text-align: left;
+  padding: 8px;
+  text-align: left;
 }
 
 #leaderboard-table th {
-border-bottom: 2px solid var(--dark-green);
+  border-bottom: 2px solid var(--dark-green);
 }
 #leaderboard-table td:first-child, #leaderboard-table td:last-child {
-text-align: center;
+  text-align: center;
 }

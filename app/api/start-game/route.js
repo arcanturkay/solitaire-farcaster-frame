@@ -1,3 +1,4 @@
+// app/api/start-game/route.js
 import { NextResponse } from 'next/server';
 
 // Next.js otomatik olarak BASE_URL'i alır, ancak Frame'ler için mutlak URL zorunludur.

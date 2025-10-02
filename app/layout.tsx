@@ -1,3 +1,4 @@
+// app/layout.tsx
 import { Providers } from './providers';
 import type { Metadata } from 'next';
 // GamePage import'u RootLayout'ta kullanılmadığı için kaldırıldı.
