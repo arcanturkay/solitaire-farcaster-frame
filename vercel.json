@@ -1,9 +1,19 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     {
       "source": "/.well-known/farcaster.json",
       "destination": "https://api.farcaster.xyz/miniapps/hosted-manifest/0199a180-010f-d7c0-f073-6dcfbba5ed9c",
-      "permanent": false,
+      "statusCode": 307
+    },
+    {
+      "source": "/old-path",
+      "destination": "/new-path",
+      "statusCode": 308
+    },
+    {
+      "source": "/temp-path",
+      "destination": "/new-temp-path",
       "statusCode": 307
     }
   ]
