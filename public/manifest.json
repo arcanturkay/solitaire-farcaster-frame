@@ -1,20 +1,20 @@
 {
   "frame": {
-    "name": "solitaire on farcaster",
+    "name": "solitaire",
     "version": "1",
-    "iconUrl": "https://solitaire-farcaster-frame.vercel.app/icon.png",
+    "iconUrl": "https://solitaire-farcaster-frame.vercel.app//icon.png",
     "homeUrl": "https://solitaire-farcaster-frame.vercel.app/",
-    "imageUrl": "https://solitaire-farcaster-frame.vercel.app/splash.png",
-    "splashImageUrl": "https://solitaire-farcaster-frame.vercel.app/splash.png",
-    "splashBackgroundColor": "#38761d",
-    "webhookUrl": "https://solitaire-farcaster-frame.vercel.app/api/webhook",
-    "subtitle": "soliatire",
-    "description": "The classic Solitaire is back now playable directly inside Farcaster.",
+    "imageUrl": "https://solitaire-farcaster-frame.vercel.app//image.png",
+    "splashImageUrl": "https://solitaire-farcaster-frame.vercel.app//splash.png",
+    "splashBackgroundColor": "#FFFFFF",
+    "webhookUrl": "https://solitaire-farcaster-frame.vercel.app//api/webhook",
+    "subtitle": "solitaire",
+    "description": "solitaire",
     "primaryCategory": "games"
   },
   "accountAssociation": {
-    "header": "",
-    "payload": "",
-    "signature": ""
+    "header": "eyJmaWQiOjMzMTM1MiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDI1NmQ2OTkyQkUwRDY5NTZlYTg0MTk4RDYxQTE3MDc1NjcxNTgzNzcifQ",
+    "payload": "eyJkb21haW4iOiJzb2xpdGFpcmUtZmFyY2FzdGVyLWZyYW1lLnZlcmNlbC5hcHAifQ",
+    "signature": "OxtX2JbB8WV2EIUmMpN1YcVwXn+HjWJ7R4iJLT1kVqIymxWdfJnMjaT+Szf72Pf74guGRQQDojhVOz0xg8+G3xw="
   }
 }
