@@ -1,5 +1,5 @@
 // app/layout.js
-import './globals.css';
+
 
 // VERCEL'DEN ALDIĞINIZ GERÇEK CANLI URL'Yİ BURAYA YAPIŞTIRIN!
 // Örn: https://solitaire-farcaster-frame-xxxx.vercel.app
