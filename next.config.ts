@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/.well-known/farcaster.json',
+        source: '/.well-known/farcaster/route.ts',
         // Lütfen bu Destination URL'sinin sizin Farcaster Manifest URL'niz olduğundan emin olun.
         destination: 'https://api.farcaster.xyz/miniapps/hosted-manifest/0199a180-010f-d7c0-f073-6dcfbba5ed9c', 
         permanent: false, // 307 (Temporary) redirect için false olmalı.
