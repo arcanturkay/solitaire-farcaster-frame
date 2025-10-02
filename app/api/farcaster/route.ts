@@ -1,9 +1,11 @@
-// app/api/farcaster/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
 const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY;
+const BASE_URL = "https://solitaire-farcaster-frame.vercel.app"; // BASE_URL tanımı eklendi
 
+// --- GET METODU (Web sitesi FID çekme) ---
 export async function GET(request: Request) {
+  // ... (Sizin Neynar API ile FID çekme mantığınız buradadır)
   const { searchParams } = new URL(request.url);
   const walletAddress = searchParams.get('address');
 
@@ -28,21 +30,17 @@ export async function GET(request: Request) {
     if (!neynarResponse.ok) {
         const errorData = await neynarResponse.json();
         console.warn(`Neynar API error for address ${walletAddress}:`, errorData);
-        // Hata durumunda bile farcasterId olarak cüzdan adresini yollayalım.
         return NextResponse.json({ farcasterId: walletAddress });
     }
 
     const data = await neynarResponse.json();
     
-    // Neynar'dan gelen verinin yapısı { "users": [ { "username": "...", ... } ] } şeklinde olabilir
-    // Veya adresin altında { "0x...": [ { "username": "...", ... } ] }
     const users = data.users || (data[walletAddress.toLowerCase()] || []);
 
     if (users && users.length > 0 && users[0].username) {
         const farcasterId = users[0].username;
         return NextResponse.json({ farcasterId });
     } else {
-        // Kullanıcı bulunamazsa, cüzdan adresini ID olarak geri gönder.
         return NextResponse.json({ farcasterId: walletAddress });
     }
 
@@ -50,4 +48,36 @@ export async function GET(request: Request) {
     console.error("Farcaster API Server Error:", error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+// --- POST METODU (Butona Basılma Mantığı) ---
+export async function POST(request: NextRequest) {
+    // Bu test, body'yi okumadan hemen yanıt döndürerek
+    // butona basma akışının çalışıp çalışmadığını kontrol eder.
+    
+    // Not: Normalde body'yi okumanız gerekir: const body = await request.json();
+
+    const nextFrameMetadata = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>Solitaire Farcaster - Game Started (POST Test)</title>
+                <meta name="fc:frame" content="vNext" />
+                
+                <meta name="fc:frame:image" content="${BASE_URL}/game.png" />
+                
+                <meta name="fc:frame:button:1" content="Open Full Game" />
+                <meta name="fc:frame:button:1:action" content="link" />
+                <meta name="fc:frame:button:1:target" content="${BASE_URL}" />
+            </head>
+            <body>POST isteği başarılı!</body>
+        </html>
+    `;
+
+    return new Response(nextFrameMetadata, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/html',
+        },
+    });
 }

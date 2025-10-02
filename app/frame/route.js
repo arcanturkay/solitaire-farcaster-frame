@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 
 // Next.js otomatik olarak BASE_URL'i alır, ancak Frame'ler için mutlak URL zorunludur.
-// Bu değişkeni kendi Vercel domain'inizle değiştirin.
 const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
-// DÜZELTME YAPILDI: Frame'in kendisinin URL'si /frame'dir.
-const FRAME_PATH = "/frame"; 
+// KRİTİK DÜZELTME: Butona basıldığında Frame Mantığını işleyecek olan API rotası.
+const FRAME_POST_PATH = "/api/farcaster"; 
 
 // İlk Frame: Oyun başlatma ekranı (GET)
 export async function GET() {
@@ -21,8 +20,8 @@ export async function GET() {
         <meta name="fc:frame:button:1" content="Play Now" />
         <meta name="fc:frame:button:1:action" content="post" />
         
-        <!-- DÜZELTME: POST İSTEĞİ ARTIK KENDİSİNE, YANİ /frame'e GİTMELİ -->
-        <meta name="fc:frame:post_url" content="${BASE_URL}${FRAME_PATH}" />
+        <!-- DÜZELTME: POST İSTEĞİ ARTIK MANTIĞI İŞLEYEN /api/farcaster'a GİTMELİ -->
+        <meta name="fc:frame:post_url" content="${BASE_URL}${FRAME_POST_PATH}" />
       </head>
       <body>Frame başlangıç sayfası</body>
     </html>
@@ -31,10 +30,12 @@ export async function GET() {
   });
 }
 
-// Kullanıcı butona bastığında POST handler çalışır (Oyun Başladı)
-// İsteği alan URL: https://solitaire-farcaster-frame.vercel.app/frame
+// Kullanıcı butona bastığında POST handler çalışır (Bu metot artık kullanılmayacak, istek /api/farcaster'a gidecek)
+// Bu metodu korumak yerine, butonu doğru yere yönlendirmemiz gerekiyor.
 export async function POST() {
-  // Eğer butona basıldığında başka bir Frame göstermek istiyorsanız:
+  // Bu metot artık Frame POST mantığı için kullanılmayacağı için,
+  // kullanıcının gönderdiği eski POST yanıtını koruyarak bu dosya içindeki
+  // POST'un bir Link aksiyonu döndürme amacına uygun bırakıyoruz.
   return new NextResponse(`
     <!DOCTYPE html>
     <html>
