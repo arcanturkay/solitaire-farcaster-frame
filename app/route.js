@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
+// Next.js otomatik olarak BASE_URL'i alır, ancak Frame'ler için mutlak URL zorunludur.
+// Bu değişkeni kendi Vercel domain'inizle değiştirin.
 const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
 
-// İlk embed check için GET handler (Preview tool burayı GET ile çağırır)
+// İlk Frame: Oyun başlatma ekranı
 export async function GET() {
   return new NextResponse(`
     <!DOCTYPE html>
@@ -11,13 +13,13 @@ export async function GET() {
         <title>Solitaire Farcaster</title>
         <meta name="fc:frame" content="vNext" />
         
-        <!-- DÜZELTME: Dosya adınız start-image.png olduğu varsayıldı -->
+        <!-- KRİTİK: Mutlak URL ve public klasöründeki başlangıç görseli -->
         <meta name="fc:frame:image" content="${BASE_URL}/start-image.png" />
         
         <meta name="fc:frame:button:1" content="Play Now" />
         <meta name="fc:frame:button:1:action" content="post" />
         
-        <!-- DÜZELTME: Butona basıldığında, bu dosyadaki POST handler'ının çalışması için BASE_URL'e POST yapıyoruz. -->
+        <!-- Butona basıldığında, bu dosyadaki POST handler'ının çalışması için BASE_URL'e POST yapıyoruz. -->
         <meta name="fc:frame:post_url" content="${BASE_URL}" />
       </head>
       <body>Frame başlangıç sayfası</body>
@@ -27,7 +29,7 @@ export async function GET() {
   });
 }
 
-// Kullanıcı butona bastığında POST handler çalışır
+// Kullanıcı butona bastığında POST handler çalışır (Oyun Başladı)
 export async function POST() {
   // Eğer butona basıldığında başka bir Frame göstermek istiyorsanız:
   return new NextResponse(`
@@ -37,7 +39,7 @@ export async function POST() {
         <title>Solitaire Farcaster - Game Started</title>
         <meta name="fc:frame" content="vNext" />
         
-        <!-- DÜZELTME: İkinci görsel için de mutlak URL kullanın ve dosya adını kontrol edin. -->
+        <!-- KRİTİK: Yeni oluşturduğunuz game.png görseli -->
         <meta name="fc:frame:image" content="${BASE_URL}/game.png" />
         
         <meta name="fc:frame:button:1" content="Open Game" />
