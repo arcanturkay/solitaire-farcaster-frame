@@ -1,22 +1,3 @@
-Skip to content
-arcanturkay's projects
-arcanturkay's projects
-
-Hobby
-
-solitaire-farcaster-frame
-
-FTD6avRL3
-
-
-
-Find…
-F
-
-Source
-Output
-app/api/farcaster/route.ts
-
 // app/api/farcaster/route.ts
 import { NextResponse } from 'next/server';
 
@@ -69,5 +50,4 @@ export async function GET(request: Request) {
     console.error("Farcaster API Server Error:", error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-solitaire-farcaster-frame – Deployment Source – Vercel
-18:56:10
+}
