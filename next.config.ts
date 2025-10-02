@@ -20,6 +20,26 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  async headers() {
+    return [
+      {
+        source: '/:path*', // Tüm sayfalara uygulansın
+        headers: [
+          // CORS: her yerden erişim
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          // Embed izinleri: Farcaster domain’i
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://www.farcaster.com",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
