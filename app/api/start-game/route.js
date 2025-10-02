@@ -1,36 +1,27 @@
-// app/layout.js
+import { NextResponse } from 'next/server';
 
+// Next.js otomatik olarak BASE_URL'i alır, ancak Frame'ler için mutlak URL zorunludur.
+const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
 
-// VERCEL'DEN ALDIĞINIZ GERÇEK CANLI URL'Yİ BURAYA YAPIŞTIRIN!
-// Örn: https://solitaire-farcaster-frame-xxxx.vercel.app
-const FRAME_URL = "https://solitaire-farcaster-frame.vercel.app/"; 
-
-export const metadata = {
-  title: 'Farcaster Solitaire',
-  description: 'Play Solitaire right inside a Farcaster Frame.',
-  
-  // FRAME META TAGS: Farcaster'a oyunun başlangıcını bildirir.
-  other: {
-    'fc:frame': 'vNext',
+// 2. POST İŞLEYİCİSİ (Kullanıcı "Play Now" butonuna tıkladıktan sonra çalışır)
+// Bu fonksiyon, kullanıcıyı Frame'den oyunun ana URL'sine yönlendirir.
+export async function POST(request) {
+    // Farcaster'dan gelen POST body'yi okuyoruz (işlem yapmasak bile okumalıyız).
+    // Gelen veri Frame'e basan kullanıcı bilgilerini içerir.
+    try {
+        await request.json(); 
+    } catch (e) {
+        console.error("Farcaster POST body okuma hatası:", e);
+    }
     
-    // Projenizin public klasöründeki start-image.png dosyasını gösterir.
-    'fc:frame:image': `${FRAME_URL}/start-image.png`, 
-    
-    // Kullanıcı butona tıkladığında isteği göndereceği API yolu (route.js).
-    'fc:frame:post_url': `${FRAME_URL}/api/start-game`, 
-    
-    // Frame'deki ilk butonun metni.
-    'fc:frame:button:1': 'Start Game (Farcaster Login)', 
-  },
-};
+    // 302 yönlendirmesi ile kullanıcıyı oyunun gerçek URL'sine gönderiyoruz.
+    // Frame akışını başarılı bir şekilde sonlandıran kısımdır.
+    return NextResponse.redirect(BASE_URL, { 
+        status: 302, // 302: Geçici olarak başka bir adrese yönlendir.
+    });
+}
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      {/* Next.js, metadata objesindeki tüm tag'leri otomatik olarak <head> içine yerleştirir. 
-        Bu yüzden ekstra bir <head> etiketi yazmamıza gerek yok.
-      */}
-      <body>{children}</body>
-    </html>
-  );
+// 1. GET İŞLEYİCİSİ (Debug/Test amaçlı)
+export async function GET() {
+    return NextResponse.json({ status: 'OK', message: 'Solitaire Start Game API' });
 }
