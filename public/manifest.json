@@ -2,12 +2,12 @@
   "frame": {
     "name": "solitaire",
     "version": "1",
-    "iconUrl": "https://solitaire-farcaster-frame.vercel.app//icon.png",
+    "iconUrl": "https://solitaire-farcaster-frame.vercel.app//start-image.png",
     "homeUrl": "https://solitaire-farcaster-frame.vercel.app/",
-    "imageUrl": "https://solitaire-farcaster-frame.vercel.app//image.png",
-    "splashImageUrl": "https://solitaire-farcaster-frame.vercel.app//splash.png",
+    "imageUrl": "https://solitaire-farcaster-frame.vercel.app/start-image.png",
+    "splashImageUrl": "https://solitaire-farcaster-frame.vercel.app/game.png",
     "splashBackgroundColor": "#FFFFFF",
-    "webhookUrl": "https://solitaire-farcaster-frame.vercel.app//api/webhook",
+    "webhookUrl": "https://solitaire-farcaster-frame.vercel.app/api/farcaster",
     "subtitle": "solitaire",
     "description": "solitaire",
     "primaryCategory": "games"
