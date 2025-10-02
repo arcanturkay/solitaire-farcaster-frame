@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 // Next.js otomatik olarak BASE_URL'i alır, ancak Frame'ler için mutlak URL zorunludur.
 // Bu değişkeni kendi Vercel domain'inizle değiştirin.
 const BASE_URL = "https://solitaire-farcaster-frame.vercel.app";
-const FRAME_PATH = "/frame"; // Yeni FRAME rotası
+const FRAME_PATH = "/api/frame"; // Yeni FRAME rotası
 
 // İlk Frame: Oyun başlatma ekranı
 export async function GET() {

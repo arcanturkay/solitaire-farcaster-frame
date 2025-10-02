@@ -14,13 +14,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 export const metadata: Metadata = {
   title: "Solitaire on Farcaster",
   openGraph: {
-    images: ["https://solitaire-farcaster-frame.vercel.app/splash.png"],
+    images: ["https://solitaire-farcaster-frame.vercel.app/start-image.png"],
   },
   other: {
     // Farcaster Frame tagleri
     "fc:frame": "vNext",
-    "fc:frame:image": "https://solitaire-farcaster-frame.vercel.app/splash.png",
+    "fc:frame:image": "https://solitaire-farcaster-frame.vercel.app/start-image.png",
     "fc:frame:button:1": "Play Now",
-    "fc:frame:post_url": "https://solitaire-farcaster-frame.vercel.app/api/start",
+    "fc:frame:post_url": "https://solitaire-farcaster-frame.vercel.app/api/frame",
   },
 };
