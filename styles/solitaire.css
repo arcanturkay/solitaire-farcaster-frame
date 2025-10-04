@@ -177,14 +177,6 @@ h1 {
   margin-bottom: 0;
 }
 
-.card.face-up {
-  margin-bottom: -60px !important;
-  z-index: 5 !important;
-}
-.card.face-down {
-  z-index: 2 !important;
-}
-
 #waste .card:not(:last-child) {
   pointer-events: none;
   opacity: 0.6;

@@ -1,27 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAccount, useConnect } from 'wagmi';
+import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
+import { coinbaseWallet } from '@wagmi/connectors';
+import { useRouter } from 'next/navigation';
 
 export default function StartPage() {
+    const [showOptions, setShowOptions] = useState(true); // Splash’tan sonra direkt wallet modal açılsın
+    const { connect } = useConnect();
+    const { address, isConnected } = useAccount();
+    const router = useRouter();
 
-    const [showOptions, setShowOptions] = useState(false);
-
+    // Wallet seçildiğinde bağlan
     const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
-        setShowOptions(false);
-
-        const walletUserId = wallet === 'farcaster' ? '@farcasterUser' : '@coinbaseUser';
-
-        localStorage.setItem('currentPlayerId', walletUserId);
-
-        window.location.href = '/game';
+        if (wallet === 'farcaster') {
+            connect({ connector: farcasterMiniApp() });
+        } else {
+            connect({ connector: new coinbaseWallet({ appName: 'Solitaire MiniApp' }) });
+        }
     };
 
-    const handleTestPlay = () => {
-        // Direkt test oyuncusu ile başlat
-        localStorage.setItem('currentPlayerId', 'TestPlayer');
-        window.location.href = '/game';
-    };
+    // Wallet bağlandığında oyun sayfasına yönlendir
+    useEffect(() => {
+        if (isConnected && address) {
+            localStorage.setItem('currentPlayerId', address);
+            router.push('/game'); // React uyumlu yönlendirme
+        }
+    }, [isConnected, address, router]);
 
     return (
         <main style={{
@@ -67,22 +74,6 @@ export default function StartPage() {
                     }}
                 >
                     Connect Wallet
-                </button>
-
-                <button
-                    onClick={handleTestPlay}
-                    style={{
-                        padding: '12px 30px',
-                        fontSize: '1rem',
-                        borderRadius: 12,
-                        background: '#FFD700',
-                        color: '#0A5323',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 600
-                    }}
-                >
-                    Play Test Game
                 </button>
             </div>
 
