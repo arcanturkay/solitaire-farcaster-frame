@@ -15,21 +15,20 @@ export default function StartPage() {
 
     // Wallet seçildiğinde bağlan
     const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
-        setShowOptions(false); // modal kapanır
+        setShowOptions(false);
 
         if (wallet === 'farcaster') {
             connect({ connector: farcasterMiniApp() });
         } else {
-            connect({ connector: new coinbaseWallet({ appName: 'Solitaire MiniApp' }) });
+            connect({ connector: coinbaseWallet({ appName: 'Solitaire MiniApp' }) });
         }
     };
 
     // Wallet bağlandığında oyun sayfasına yönlendir
     useEffect(() => {
         if (isConnected && address) {
-            // Embed uyumlu localStorage + router yönlendirmesi
             localStorage.setItem('currentPlayerId', address);
-            router.push('/game'); // window.location.href kullanmayın
+            router.push('/game');
         }
     }, [isConnected, address, router]);
 
