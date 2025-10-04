@@ -8,13 +8,15 @@ import { coinbaseWallet } from '@wagmi/connectors';
 import { useRouter } from 'next/navigation';
 
 export default function StartPage() {
-    const [showOptions, setShowOptions] = useState(true); // Splash’tan sonra direkt wallet modal açılsın
+    const [showOptions, setShowOptions] = useState(true); // Splash’tan sonra modal açık
     const { connect } = useConnect();
     const { address, isConnected } = useAccount();
     const router = useRouter();
 
     // Wallet seçildiğinde bağlan
     const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
+        setShowOptions(false); // modal kapanır
+
         if (wallet === 'farcaster') {
             connect({ connector: farcasterMiniApp() });
         } else {
@@ -25,8 +27,9 @@ export default function StartPage() {
     // Wallet bağlandığında oyun sayfasına yönlendir
     useEffect(() => {
         if (isConnected && address) {
+            // Embed uyumlu localStorage + router yönlendirmesi
             localStorage.setItem('currentPlayerId', address);
-            router.push('/game'); // React uyumlu yönlendirme
+            router.push('/game'); // window.location.href kullanmayın
         }
     }, [isConnected, address, router]);
 
