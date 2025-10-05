@@ -3,28 +3,59 @@
 import { useEffect } from 'react';
 import '/styles/solitaire.css';
 import { initSolitaire } from '../scripts/solitaire';
-import { useAccount } from 'wagmi';
+import { useAccount, useConnect } from 'wagmi';
+import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
+import { coinbaseWallet } from '@wagmi/connectors';
+import { useRouter } from 'next/navigation';
 
 export default function GamePage() {
     const { address, isConnected } = useAccount();
+    const { connect } = useConnect();
+    const router = useRouter();
 
     useEffect(() => {
         const setupPlayer = async () => {
-            let currentPlayerId = localStorage.getItem('currentPlayerId');
-
-            if (!currentPlayerId && isConnected && address) {
-                // Fallback: wallet short address
-                currentPlayerId = address.slice(0, 6) + '...' + address.slice(-4);
-                localStorage.setItem('currentPlayerId', currentPlayerId);
+            // Eğer wallet bağlı değilse yönlendirme yap
+            if (!isConnected || !address) {
+                router.push('/start');
+                return;
             }
 
+            let currentPlayerId: string | null = localStorage.getItem('currentPlayerId');
+
+            if (!currentPlayerId) {
+                try {
+                    // Farcaster Mini App connector
+                    const fc = farcasterMiniApp();
+                    // context’i any ile cast ediyoruz çünkü sdk tip sorunları veriyor
+                    const context = (fc as any)?.context;
+                    if (context?.user?.fid) {
+                        currentPlayerId = `FID-${context.user.fid}`;
+                    } else if (context?.user?.username) {
+                        currentPlayerId = context.user.username;
+                    } else {
+                        // fallback: wallet kısa adres
+                        currentPlayerId = address.slice(0, 6) + '...' + address.slice(-4);
+                    }
+                } catch (err) {
+                    console.warn('Could not get Farcaster user:', err);
+                    currentPlayerId = address ? address.slice(0, 6) + '...' + address.slice(-4) : 'Guest';
+                }
+
+                // kesin string olarak localStorage’a yaz
+                localStorage.setItem('currentPlayerId', currentPlayerId ?? 'Guest');
+
+            }
+
+            // Oyunu başlat
             const gameContainer = document.getElementById('game-container');
             if (!gameContainer) return;
-            initSolitaire(currentPlayerId || 'Guest');
+            initSolitaire(currentPlayerId ?? 'Guest');
+
         };
 
         setupPlayer();
-    }, [isConnected, address]);
+    }, [isConnected, address, router]);
 
     return (
         <div id="game-container" className="game-container">
@@ -34,18 +65,12 @@ export default function GamePage() {
 
             <div className="top-piles">
                 <div className="stock-waste-piles">
-                    <div id="stock" className="pile">
-                        <div className="pile-placeholder"></div>
-                    </div>
-                    <div id="waste" className="pile">
-                        <div className="pile-placeholder"></div>
-                    </div>
+                    <div id="stock" className="pile"><div className="pile-placeholder"></div></div>
+                    <div id="waste" className="pile"><div className="pile-placeholder"></div></div>
                 </div>
                 <div className="foundation-piles">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="pile foundation">
-                            <div className="pile-placeholder"></div>
-                        </div>
+                        <div key={i} className="pile foundation"><div className="pile-placeholder"></div></div>
                     ))}
                 </div>
             </div>
@@ -58,21 +83,15 @@ export default function GamePage() {
 
             <div className="controls">
                 <button className="new-game-btn">New Game</button>
-                <button id="leaderboard-btn" className="control-btn">
-                    Leaderboard
-                </button>
-                <button id="auto-finish-btn" className="control-btn" style={{ display: 'none' }}>
-                    Auto-Finish
-                </button>
+                <button id="leaderboard-btn" className="control-btn">Leaderboard</button>
+                <button id="auto-finish-btn" className="control-btn" style={{ display: 'none' }}>Auto-Finish</button>
             </div>
 
             <div id="win-modal" className="modal-overlay">
                 <div className="modal-content">
                     <h2>You Win!</h2>
                     <p id="final-score"></p>
-                    <p>
-                        Score saved for: <span id="winning-player-name"></span>
-                    </p>
+                    <p>Score saved for: <span id="winning-player-name"></span></p>
                     <button className="new-game-btn play-again-btn">Play Again</button>
                 </div>
             </div>
@@ -81,18 +100,10 @@ export default function GamePage() {
                 <div className="modal-content">
                     <h2>Leaderboard (Accumulated Score)</h2>
                     <table id="leaderboard-table">
-                        <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Name</th>
-                            <th>Total Score</th>
-                        </tr>
-                        </thead>
+                        <thead><tr><th>Rank</th><th>Name</th><th>Total Score</th></tr></thead>
                         <tbody></tbody>
                     </table>
-                    <button id="close-leaderboard-btn" className="control-btn">
-                        Close
-                    </button>
+                    <button id="close-leaderboard-btn" className="control-btn">Close</button>
                 </div>
             </div>
         </div>
