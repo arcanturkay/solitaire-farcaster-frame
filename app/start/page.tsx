@@ -6,14 +6,20 @@ import { useAccount, useConnect } from 'wagmi';
 import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
 import { coinbaseWallet } from '@wagmi/connectors';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@farcaster/miniapp-sdk'; // ✅ yeni import
 
 export default function StartPage() {
-    const [showOptions, setShowOptions] = useState(true); // Splash’tan sonra modal açık
+    const [showOptions, setShowOptions] = useState(true);
     const { connect } = useConnect();
     const { address, isConnected } = useAccount();
     const router = useRouter();
 
-    // Wallet seçildiğinde bağlan
+    useEffect(() => {
+        // ✅ Farcaster SDK Ready çağrısı (Yeşil ekranın kalkması için)
+        const sdk = createClient();
+        sdk.actions.ready();
+    }, []);
+
     const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
         setShowOptions(false);
 
@@ -24,7 +30,6 @@ export default function StartPage() {
         }
     };
 
-    // Wallet bağlandığında oyun sayfasına yönlendir
     useEffect(() => {
         if (isConnected && address) {
             localStorage.setItem('currentPlayerId', address);

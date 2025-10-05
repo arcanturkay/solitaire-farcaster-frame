@@ -22,16 +22,15 @@
 }
 
 body {
-  background-color: var(--main-green);
+  margin: 0;
   font-family: 'Inter', sans-serif;
   color: var(--light-text);
+  background-color: var(--main-green);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  padding: 20px 0;
-  margin: 0;
   user-select: none;
   overflow-x: hidden;
 }
@@ -66,6 +65,7 @@ h1 {
   border: 2px solid rgba(255,255,255,0.2);
 }
 
+/* --- Top Piles --- */
 .top-piles {
   display: flex;
   justify-content: space-between;
@@ -74,59 +74,31 @@ h1 {
   box-sizing: border-box;
 }
 
-.stock-waste-piles {
+.stock-waste-piles, .foundation-piles {
   display: flex;
   gap: var(--gap);
 }
 
-.foundation-piles {
-  display: flex;
-  gap: var(--gap);
-}
-
-/* ===== Tableau pile fix for Farcaster embed ===== */
+/* --- Tableau --- */
 .tableau-piles {
-  min-height: calc(var(--card-height) * 8);
   display: flex;
   justify-content: center;
   width: 100%;
   gap: var(--gap);
   padding: 0 var(--gap);
   box-sizing: border-box;
+  min-height: calc(var(--card-height) * 2.5);
   align-items: flex-start;
 }
 
-.tableau .card {
-  position: relative;
-  margin-bottom: -50px; /* embed’de üst üste binmeyi azalt */
-}
-
-.tableau .card.face-up {
-  margin-bottom: -40px;
-}
-
-.tableau .card:last-child {
-  margin-bottom: 0;
-}
-
-@media (max-width: 900px) {
-  .tableau .card {
-    margin-bottom: -40px;
-  }
-  .tableau .card.face-up {
-    margin-bottom: -30px;
-  }
-}
-
-/* ===== Pile & Card Styling ===== */
 .pile {
   width: var(--card-width);
-  height: var(--card-height);
   position: relative;
 }
 
 .pile.tableau {
-  height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .pile-placeholder {
@@ -137,10 +109,6 @@ h1 {
   box-sizing: border-box;
 }
 
-#stock .pile-placeholder {
-  cursor: pointer;
-}
-
 .card {
   width: var(--card-width);
   height: var(--card-height);
@@ -148,9 +116,7 @@ h1 {
   border: 1px solid #CCC;
   border-radius: var(--border-radius);
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -158,7 +124,6 @@ h1 {
   box-sizing: border-box;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  z-index: 1;
 }
 
 .card.face-down {
@@ -172,25 +137,20 @@ h1 {
   border: 1px solid #1e40af;
 }
 
-.card.face-down .rank, .card.face-down .suit {
-  display: none;
-}
-
 .card.red { color: var(--red-suit); }
 .card.black { color: var(--black-suit); }
 
-.rank {
+.rank, .suit {
   font-size: 1.1rem;
-  font-weight: 700;
-}
-.suit {
-  font-size: 1.1rem;
-  align-self: flex-end;
 }
 
-#waste .card:not(:last-child) {
-  pointer-events: none;
-  opacity: 0.6;
+.tableau .card {
+  margin-bottom: -60px;
+  z-index: 1; /* Kartların üst üste düzgün durması için */
+}
+
+.tableau .card:last-child {
+  margin-bottom: 0;
 }
 
 .card.dragging {
@@ -198,6 +158,7 @@ h1 {
   z-index: 999;
 }
 
+/* --- Controls --- */
 .controls {
   display: flex;
   gap: 10px;
@@ -221,6 +182,7 @@ h1 {
   background-color: var(--dark-blue-hover);
 }
 
+/* --- Modal --- */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -229,7 +191,6 @@ h1 {
   height: 100%;
   background-color: rgba(0,0,0,0.7);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 2000;
@@ -253,22 +214,7 @@ h1 {
   max-width: 400px;
 }
 
-.modal-content h2 {
-  font-size: 2.5rem;
-  margin: 0 0 10px 0;
-}
-
-.modal-content p {
-  font-size: 1.2rem;
-  margin: 0 0 20px 0;
-}
-
-#current-player-status {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 15px;
-}
-
+/* --- Leaderboard --- */
 #leaderboard-table {
   width: 100%;
   border-collapse: collapse;

@@ -2,15 +2,45 @@
 import { useEffect } from 'react';
 import '/styles/solitaire.css';
 import { initSolitaire } from '../scripts/solitaire';
+import { useAccount } from 'wagmi';
+import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
 
 export default function GamePage() {
-    useEffect(() => {
-        const gameContainer = document.getElementById('game-container');
-        if (!gameContainer) return; // DOM hazır değilse çık
+    const { address, isConnected } = useAccount();
 
-        const { reset } = initSolitaire('@TestUser');
-        // reset(); // isteğe bağlı
-    }, []);
+    useEffect(() => {
+        const setupPlayer = async () => {
+            let currentPlayerId = localStorage.getItem('currentPlayerId');
+
+            if (!currentPlayerId && isConnected && address) {
+                try {
+                    const fc = farcasterMiniApp();
+                    if (fc.actions?.ready) await fc.actions.ready(); // ⚡ SDK hazır
+
+                    const context = fc?.context;
+                    if (context?.user?.fid) {
+                        currentPlayerId = `FID-${context.user.fid}`;
+                    } else if (context?.user?.username) {
+                        currentPlayerId = context.user.username;
+                    } else {
+                        currentPlayerId = address.slice(0, 6) + '...' + address.slice(-4);
+                    }
+
+                    localStorage.setItem('currentPlayerId', currentPlayerId);
+                } catch (err) {
+                    console.warn('Farcaster user fetch failed:', err);
+                    currentPlayerId = 'Guest';
+                }
+            }
+
+            const gameContainer = document.getElementById('game-container');
+            if (!gameContainer) return;
+
+            initSolitaire(currentPlayerId || 'Guest'); // ⚡ Oyunu başlat
+        };
+
+        setupPlayer();
+    }, [isConnected, address]);
 
     return (
         <div id="game-container" className="game-container">
@@ -24,10 +54,9 @@ export default function GamePage() {
                     <div id="waste" className="pile"><div className="pile-placeholder"></div></div>
                 </div>
                 <div className="foundation-piles">
-                    <div className="pile foundation"><div className="pile-placeholder"></div></div>
-                    <div className="pile foundation"><div className="pile-placeholder"></div></div>
-                    <div className="pile foundation"><div className="pile-placeholder"></div></div>
-                    <div className="pile foundation"><div className="pile-placeholder"></div></div>
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="pile foundation"><div className="pile-placeholder"></div></div>
+                    ))}
                 </div>
             </div>
 
@@ -40,10 +69,9 @@ export default function GamePage() {
             <div className="controls">
                 <button className="new-game-btn">New Game</button>
                 <button id="leaderboard-btn" className="control-btn">Leaderboard</button>
-                <button id="auto-finish-btn" className="control-btn" style={{display:'none'}}>Auto-Finish</button>
+                <button id="auto-finish-btn" className="control-btn" style={{ display: 'none' }}>Auto-Finish</button>
             </div>
 
-            {/* Modal yapıları */}
             <div id="win-modal" className="modal-overlay">
                 <div className="modal-content">
                     <h2>You Win!</h2>
