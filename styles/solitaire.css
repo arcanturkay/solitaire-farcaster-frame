@@ -29,7 +29,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 20px 0;
   margin: 0;
   user-select: none;
@@ -84,17 +84,41 @@ h1 {
   gap: var(--gap);
 }
 
+/* ===== Tableau pile fix for Farcaster embed ===== */
 .tableau-piles {
+  min-height: calc(var(--card-height) * 8);
   display: flex;
   justify-content: center;
   width: 100%;
   gap: var(--gap);
   padding: 0 var(--gap);
   box-sizing: border-box;
-  min-height: calc(var(--card-height) * 2.5);
   align-items: flex-start;
 }
 
+.tableau .card {
+  position: relative;
+  margin-bottom: -50px; /* embed’de üst üste binmeyi azalt */
+}
+
+.tableau .card.face-up {
+  margin-bottom: -40px;
+}
+
+.tableau .card:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .tableau .card {
+    margin-bottom: -40px;
+  }
+  .tableau .card.face-up {
+    margin-bottom: -30px;
+  }
+}
+
+/* ===== Pile & Card Styling ===== */
 .pile {
   width: var(--card-width);
   height: var(--card-height);
@@ -162,19 +186,6 @@ h1 {
 .suit {
   font-size: 1.1rem;
   align-self: flex-end;
-}
-
-.tableau .card {
-  position: relative;
-  margin-bottom: -70px;
-}
-
-.tableau .card.face-up {
-  margin-bottom: -60px;
-}
-
-.tableau .card:last-child {
-  margin-bottom: 0;
 }
 
 #waste .card:not(:last-child) {

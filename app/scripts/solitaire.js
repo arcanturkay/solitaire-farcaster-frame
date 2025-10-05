@@ -1,19 +1,17 @@
-//app/scripts/solitaire.js
+// app/scripts/solitaire.js
 import { initLeaderboard } from './leaderboard';
 
 let __solitaire_initialized = false;
 let __solitaire_reset = null;
 
-export function initSolitaire(startingPlayerId = '@TestUser') {
+export function initSolitaire(startingPlayerId = 'Guest') {
     if (__solitaire_initialized) {
         if (typeof __solitaire_reset === 'function') __solitaire_reset();
         return { reset: __solitaire_reset };
     }
 
-    // Leaderboard’u başlat
     const { saveScore, renderLeaderboard } = initLeaderboard();
 
-    // --- DOM referansları ---
     const stockPile = document.getElementById('stock');
     const wastePile = document.getElementById('waste');
     const foundationPiles = document.querySelectorAll('.foundation');
@@ -22,8 +20,6 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
     const newGameButtons = document.querySelectorAll('.new-game-btn');
     const gameContainer = document.getElementById('game-container');
     const autoFinishBtn = document.getElementById('auto-finish-btn');
-    const leaderboardModal = document.getElementById('leaderboard-modal');
-    const leaderboardTableBody = leaderboardModal ? leaderboardModal.querySelector('tbody') : null;
     const winModal = document.getElementById('win-modal');
     const finalScoreDisplay = document.getElementById('final-score');
     const winningPlayerNameDisplay = document.getElementById('winning-player-name');
@@ -40,19 +36,19 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
     let score = 0;
     let cardIdCounter = 0;
     let draggedCards = [];
-    let currentPlayerId = startingPlayerId || '@Player';
+    let currentPlayerId = startingPlayerId;
 
-    /* -------- Yardımcılar -------- */
     function updatePlayerStatus() {
         if (currentPlayerStatus) currentPlayerStatus.textContent = `Playing as: ${currentPlayerId}`;
     }
+
     function updateScore(points, absolute = false) {
-        if (absolute) score = points; else score += points;
+        if (absolute) score = points;
+        else score += points;
         if (score < 0) score = 0;
         if (scoreDisplay) scoreDisplay.textContent = `Score: ${score}`;
     }
 
-    /* -------- Deck -------- */
     function createDeck() {
         deck = [];
         for (const suit of SUITS) {
@@ -67,6 +63,7 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
             }
         }
     }
+
     function shuffleDeck() {
         for (let i = deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -74,7 +71,29 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         }
     }
 
-    /* -------- Drag & Drop -------- */
+    function createCardElement(cardData) {
+        const card = document.createElement('div');
+        card.id = `card-${cardIdCounter++}`;
+        card.classList.add('card', cardData.color);
+        if (!cardData.isFaceUp) card.classList.add('face-down');
+        else card.draggable = true;
+        card.dataset.rank = cardData.rank;
+        card.dataset.suit = cardData.suit;
+        card.dataset.value = cardData.value;
+        card.dataset.color = cardData.color;
+
+        const rank = document.createElement('div');
+        rank.classList.add('rank'); rank.textContent = cardData.rank;
+        const suit = document.createElement('div');
+        suit.classList.add('suit'); suit.textContent = cardData.suit;
+        card.appendChild(rank); card.appendChild(suit);
+
+        card.addEventListener('dragstart', onDragStart);
+        card.addEventListener('dragend', onDragEnd);
+        card.addEventListener('dblclick', onCardDoubleClick);
+        return card;
+    }
+
     function onDragStart(e) {
         const target = e.target;
         if (!target || target.classList.contains('face-down')) { e.preventDefault(); return; }
@@ -99,6 +118,7 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         draggedCards.forEach(c => c.classList.remove('dragging'));
         draggedCards = [];
     }
+
     function onDragOver(e) { e.preventDefault(); }
     function onDrop(e, destPile) {
         e.preventDefault();
@@ -107,6 +127,7 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         if (!sourcePile) return;
         if (validateMove(draggedCards, destPile)) moveCards(draggedCards, sourcePile, destPile);
     }
+
     function onCardDoubleClick(e) {
         const card = e.currentTarget;
         if (!card || card !== card.parentElement?.lastElementChild) return;
@@ -118,30 +139,6 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         }
     }
 
-    /* -------- Card DOM -------- */
-    function createCardElement(cardData) {
-        const card = document.createElement('div');
-        card.id = `card-${cardIdCounter++}`;
-        card.classList.add('card', cardData.color);
-        if (!cardData.isFaceUp) card.classList.add('face-down'); else card.draggable = true;
-        card.dataset.rank = cardData.rank;
-        card.dataset.suit = cardData.suit;
-        card.dataset.value = cardData.value.toString();
-        card.dataset.color = cardData.color;
-
-        const rank = document.createElement('div');
-        rank.classList.add('rank'); rank.textContent = cardData.rank;
-        const suit = document.createElement('div');
-        suit.classList.add('suit'); suit.textContent = cardData.suit;
-        card.appendChild(rank); card.appendChild(suit);
-
-        card.addEventListener('dragstart', onDragStart);
-        card.addEventListener('dragend', onDragEnd);
-        card.addEventListener('dblclick', onCardDoubleClick);
-        return card;
-    }
-
-    /* -------- Taşımalar / Kurallar -------- */
     function validateMove(cardsToMove, destPile) {
         if (!cardsToMove || cardsToMove.length === 0) return false;
         if (destPile === cardsToMove[0].parentElement) return false;
@@ -182,130 +179,60 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         checkForWinnableState();
     }
 
-    /* -------- Deal Cards -------- */
     function dealCards() {
         for (let i = 0; i < 7; i++) {
             for (let j = 0; j <= i; j++) {
-                const data = deck.pop();
-                if (!data) continue;
-                if (j === i) data.isFaceUp = true;
-                tableauPiles[i].appendChild(createCardElement(data));
+                const cardData = deck.pop();
+                const cardEl = createCardElement(cardData);
+                if (j !== i) cardEl.classList.add('face-down');
+                tableauPiles[i].appendChild(cardEl);
             }
         }
-        deck.forEach(d => stockPile.appendChild(createCardElement(d)));
-        const ph = stockPile.querySelector('.pile-placeholder');
-        if (ph) ph.style.display = 'none';
-    }
 
-    /* -------- Draw From Stock -------- */
-    function drawFromStock() {
-        const currentWasteTop = wastePile.lastElementChild;
-        if (currentWasteTop && !currentWasteTop.classList.contains('pile-placeholder')) currentWasteTop.draggable = false;
-
-        if (stockPile.children.length > 1) {
-            const card = stockPile.lastElementChild;
-            card.classList.remove('face-down');
-            card.draggable = true;
-            wastePile.appendChild(card);
-            const wp = wastePile.querySelector('.pile-placeholder');
-            if (wp) wp.style.display = 'none';
-        } else {
-            Array.from(wastePile.querySelectorAll('.card')).reverse().forEach(card => {
-                card.classList.add('face-down');
-                card.draggable = false;
-                stockPile.appendChild(card);
-            });
-            const wp = wastePile.querySelector('.pile-placeholder');
-            if (wp) wp.style.display = 'block';
+        while (deck.length > 0) {
+            const cardData = deck.pop();
+            const cardEl = createCardElement(cardData);
+            stockPile.appendChild(cardEl);
         }
     }
 
-    /* -------- Check Win -------- */
     function checkWinCondition() {
-        let total = 0;
-        Array.from(foundationPiles).forEach(p => total += p.querySelectorAll('.card').length);
-        if (total === 52 && winModal && finalScoreDisplay && winningPlayerNameDisplay) {
-            finalScoreDisplay.textContent = `Final Score: ${score}`;
-            winningPlayerNameDisplay.textContent = currentPlayerId;
-            winModal.classList.add('show');
-
-            // Leaderboard’a ekle
+        let totalCardsInFoundation = 0;
+        foundationPiles.forEach(fp => totalCardsInFoundation += fp.querySelectorAll('.card').length);
+        if (totalCardsInFoundation === 52) {
+            if (finalScoreDisplay) finalScoreDisplay.textContent = `Final Score: ${score}`;
+            if (winningPlayerNameDisplay) winningPlayerNameDisplay.textContent = currentPlayerId;
             saveScore(currentPlayerId, score);
             renderLeaderboard();
+            if (winModal) winModal.classList.add('show');
         }
     }
 
-    function checkForWinnableState() {
-        const faceDown = document.querySelectorAll('.tableau .card.face-down');
-        if (stockPile.children.length <= 1 && faceDown.length === 0) {
-            if (autoFinishBtn) autoFinishBtn.style.display = 'inline-block';
-        } else {
-            if (autoFinishBtn) autoFinishBtn.style.display = 'none';
-        }
-    }
-
-    /* -------- Auto-Finish -------- */
-    function startAutoComplete() {
-        let moved;
-        do {
-            moved = false;
-
-            // Tableau
-            Array.from(tableauPiles).forEach(pile => {
-                const cards = Array.from(pile.children).filter(c => !c.classList.contains('pile-placeholder'));
-                cards.forEach(card => {
-                    Array.from(foundationPiles).forEach(fp => {
-                        if (validateMove([card], fp)) {
-                            moveCards([card], pile, fp);
-                            moved = true;
-                        }
-                    });
-                });
-            });
-
-            // Waste
-            const wasteCards = Array.from(wastePile.children).filter(c => !c.classList.contains('pile-placeholder'));
-            wasteCards.forEach(card => {
-                Array.from(foundationPiles).forEach(fp => {
-                    if (validateMove([card], fp)) {
-                        moveCards([card], wastePile, fp);
-                        moved = true;
-                    }
-                });
-            });
-        } while(moved);
-    }
-
-    /* -------- Reset Game -------- */
-    function resetGame() {
-        cardIdCounter = 0;
+    function startNewGame() {
+        deck = [];
         score = 0;
-        updateScore(0, true);
-
-        [stockPile, wastePile].forEach(p => p.innerHTML = '<div class="pile-placeholder"></div>');
-        [...foundationPiles, ...tableauPiles].forEach(p => p.innerHTML = '');
-
+        cardIdCounter = 0;
+        draggedCards = [];
+        currentPlayerId = localStorage.getItem('currentPlayerId') || 'Guest';
+        stockPile.innerHTML = '';
+        wastePile.innerHTML = '';
+        tableauPiles.forEach(p => p.innerHTML = '');
+        foundationPiles.forEach(p => p.innerHTML = '');
         createDeck();
         shuffleDeck();
         dealCards();
-
-        if (gameContainer) gameContainer.classList.add('active');
+        updateScore(0, true);
+        updatePlayerStatus();
+        if (winModal) winModal.classList.remove('show');
     }
 
-    /* -------- Event Listeners -------- */
-    Array.from(foundationPiles).forEach(p => { p.addEventListener('dragover', onDragOver); p.addEventListener('drop', (e)=>onDrop(e,p)); });
-    Array.from(tableauPiles).forEach(p => { p.addEventListener('dragover', onDragOver); p.addEventListener('drop', (e)=>onDrop(e,p)); });
-    stockPile.addEventListener('click', drawFromStock);
-    if (autoFinishBtn) autoFinishBtn.addEventListener('click', () => startAutoComplete());
-    newGameButtons.forEach(b => b.addEventListener('click', resetGame));
-    const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
-    if (closeLeaderboardBtn && leaderboardModal) closeLeaderboardBtn.addEventListener('click', ()=>leaderboardModal.classList.remove('show'));
+    newGameButtons.forEach(btn => btn.addEventListener('click', startNewGame));
+    if (autoFinishBtn) autoFinishBtn.style.display = 'none';
 
-    __solitaire_reset = resetGame;
+    startNewGame();
+
     __solitaire_initialized = true;
+    __solitaire_reset = startNewGame;
 
-    updatePlayerStatus();
-    resetGame();
-
-    return { reset: resetGame };
+    return { reset: startNewGame };
 }

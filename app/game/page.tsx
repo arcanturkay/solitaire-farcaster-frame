@@ -1,44 +1,45 @@
+// app/game/page.tsx
 'use client';
+
 import { useEffect } from 'react';
 import '/styles/solitaire.css';
 import { initSolitaire } from '../scripts/solitaire';
 import { useAccount } from 'wagmi';
-import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
 
 export default function GamePage() {
     const { address, isConnected } = useAccount();
 
     useEffect(() => {
         const setupPlayer = () => {
+            // 1️⃣ Local storage'dan mevcut player ID'yi al
             let currentPlayerId = localStorage.getItem('currentPlayerId');
 
-            if (!currentPlayerId && isConnected && address) {
-                try {
-                    const context = window?.farcaster?.context;
-                    if (context?.user?.fid) {
-                        currentPlayerId = `FID-${context.user.fid}`;
-                    } else if (context?.user?.username) {
-                        currentPlayerId = `@${context.user.username}`;
-                    } else {
-                        currentPlayerId = address.slice(0,6) + '...' + address.slice(-4);
-                    }
-
-                    localStorage.setItem('currentPlayerId', currentPlayerId);
-                } catch (err) {
-                    console.warn('Could not fetch Farcaster user:', err);
+            if (!currentPlayerId) {
+                // 2️⃣ Farcaster Mini App context kontrolü
+                const fcContext = (window as any)?.farcaster?.context;
+                if (fcContext?.user?.fid) {
+                    currentPlayerId = `FID-${fcContext.user.fid}`;
+                } else if (fcContext?.user?.username) {
+                    currentPlayerId = `@${fcContext.user.username}`;
+                } else if (isConnected && address) {
+                    // 3️⃣ Wallet fallback: kısa address
+                    currentPlayerId = address.slice(0, 6) + '...' + address.slice(-4);
+                } else {
                     currentPlayerId = 'Guest';
                 }
+
+                localStorage.setItem('currentPlayerId', currentPlayerId);
             }
 
-            // Oyunu başlat
+            // 4️⃣ Oyunu başlat
             const gameContainer = document.getElementById('game-container');
             if (!gameContainer) return;
-            initSolitaire(currentPlayerId || 'Guest');
+
+            initSolitaire(currentPlayerId);
         };
 
         setupPlayer();
     }, [isConnected, address]);
-
 
     return (
         <div id="game-container" className="game-container">
