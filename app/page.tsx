@@ -2,14 +2,17 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Splash() {
+    const router = useRouter();
+
     useEffect(() => {
         const t = setTimeout(() => {
-            window.location.href = '/start';
+            router.push('/start'); // Next.js yönlendirmesi
         }, 2500);
         return () => clearTimeout(t);
-    }, []);
+    }, [router]);
 
     return (
         <main

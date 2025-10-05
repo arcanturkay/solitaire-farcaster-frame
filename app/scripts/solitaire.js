@@ -1,4 +1,6 @@
-// app/scripts/solitaire.js
+//app/scripts/solitaire.js
+import { initLeaderboard } from './leaderboard';
+
 let __solitaire_initialized = false;
 let __solitaire_reset = null;
 
@@ -7,6 +9,9 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         if (typeof __solitaire_reset === 'function') __solitaire_reset();
         return { reset: __solitaire_reset };
     }
+
+    // Leaderboard’u başlat
+    const { saveScore, renderLeaderboard } = initLeaderboard();
 
     // --- DOM referansları ---
     const stockPile = document.getElementById('stock');
@@ -215,6 +220,7 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         }
     }
 
+    /* -------- Check Win -------- */
     function checkWinCondition() {
         let total = 0;
         Array.from(foundationPiles).forEach(p => total += p.querySelectorAll('.card').length);
@@ -222,6 +228,10 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
             finalScoreDisplay.textContent = `Final Score: ${score}`;
             winningPlayerNameDisplay.textContent = currentPlayerId;
             winModal.classList.add('show');
+
+            // Leaderboard’a ekle
+            saveScore(currentPlayerId, score);
+            renderLeaderboard();
         }
     }
 
@@ -232,6 +242,38 @@ export function initSolitaire(startingPlayerId = '@TestUser') {
         } else {
             if (autoFinishBtn) autoFinishBtn.style.display = 'none';
         }
+    }
+
+    /* -------- Auto-Finish -------- */
+    function startAutoComplete() {
+        let moved;
+        do {
+            moved = false;
+
+            // Tableau
+            Array.from(tableauPiles).forEach(pile => {
+                const cards = Array.from(pile.children).filter(c => !c.classList.contains('pile-placeholder'));
+                cards.forEach(card => {
+                    Array.from(foundationPiles).forEach(fp => {
+                        if (validateMove([card], fp)) {
+                            moveCards([card], pile, fp);
+                            moved = true;
+                        }
+                    });
+                });
+            });
+
+            // Waste
+            const wasteCards = Array.from(wastePile.children).filter(c => !c.classList.contains('pile-placeholder'));
+            wasteCards.forEach(card => {
+                Array.from(foundationPiles).forEach(fp => {
+                    if (validateMove([card], fp)) {
+                        moveCards([card], wastePile, fp);
+                        moved = true;
+                    }
+                });
+            });
+        } while(moved);
     }
 
     /* -------- Reset Game -------- */

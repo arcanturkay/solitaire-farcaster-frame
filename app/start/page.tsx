@@ -8,26 +8,48 @@ import { coinbaseWallet } from '@wagmi/connectors';
 import { useRouter } from 'next/navigation';
 
 export default function StartPage() {
-    const [showOptions, setShowOptions] = useState(true); // Splash’tan sonra modal açık
+    const [showOptions, setShowOptions] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const { connect } = useConnect();
     const { address, isConnected } = useAccount();
     const router = useRouter();
 
-    // Wallet seçildiğinde bağlan
-    const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
+    const handleWalletClick = async (wallet: 'farcaster' | 'coinbase') => {
         setShowOptions(false);
+        setIsLoading(true);
 
-        if (wallet === 'farcaster') {
-            connect({ connector: farcasterMiniApp() });
-        } else {
-            connect({ connector: coinbaseWallet({ appName: 'Solitaire MiniApp' }) });
+        try {
+            if (wallet === 'farcaster') {
+                await connect({ connector: farcasterMiniApp() });
+
+                // Farcaster context'ten kullanıcı ID'sini al
+                const context = window?.farcaster?.context;
+                const fid = context?.user?.fid;
+                const username = context?.user?.username;
+
+                if (fid || username) {
+                    localStorage.setItem('currentPlayerId', username ? `@${username}` : `FID-${fid}`);
+                    router.push('/game');
+                    return;
+                }
+            } else {
+                await connect({ connector: coinbaseWallet({ appName: 'Solitaire MiniApp' }) });
+            }
+        } catch (err) {
+            console.error('Connection error:', err);
+            alert('Wallet connection failed');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Wallet bağlandığında oyun sayfasına yönlendir
+    // Coinbase bağlandıysa sadece address kaydedilir
     useEffect(() => {
         if (isConnected && address) {
-            localStorage.setItem('currentPlayerId', address);
+            const existing = localStorage.getItem('currentPlayerId');
+            if (!existing) {
+                localStorage.setItem('currentPlayerId', address);
+            }
             router.push('/game');
         }
     }, [isConnected, address, router]);
@@ -75,7 +97,7 @@ export default function StartPage() {
                         marginBottom: 12
                     }}
                 >
-                    Connect Wallet
+                    {isLoading ? 'Connecting...' : 'Connect Wallet'}
                 </button>
             </div>
 
