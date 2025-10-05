@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { useAccount, useConnect } from 'wagmi';
 import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
 import { coinbaseWallet } from '@wagmi/connectors';
@@ -13,15 +12,11 @@ export default function StartPage() {
     const { address, isConnected } = useAccount();
     const router = useRouter();
 
-    // Wallet seçildiğinde bağlan
     const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
-        setShowOptions(false);
-
         if (wallet === 'farcaster') connect({ connector: farcasterMiniApp() });
         else connect({ connector: coinbaseWallet({ appName: 'Solitaire MiniApp' }) });
     };
 
-    // Wallet bağlandığında oyuna yönlendir
     useEffect(() => {
         if (isConnected && address) {
             localStorage.setItem('currentPlayerId', address);
@@ -40,26 +35,25 @@ export default function StartPage() {
             padding: 24,
             position: 'relative'
         }}>
-            <div>
-                <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 16 }}>Solitaire</h1>
-                <p style={{ opacity: 0.85, marginBottom: 20 }}>Farcaster Mini App</p>
+            <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 16 }}>Solitaire</h1>
+            <p style={{ opacity: 0.85, marginBottom: 20 }}>Farcaster Mini App</p>
 
-                <button
-                    onClick={() => setShowOptions(true)}
-                    style={{
-                        padding: '15px 40px',
-                        fontSize: '1.2rem',
-                        borderRadius: 12,
-                        background: '#fff',
-                        color: '#0A5323',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 600
-                    }}
-                >
-                    Connect Wallet
-                </button>
-            </div>
+            <button
+                onClick={() => setShowOptions(true)}
+                style={{
+                    padding: '15px 40px',
+                    fontSize: '1.2rem',
+                    borderRadius: 12,
+                    background: '#fff',
+                    color: '#0A5323',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    marginBottom: 12
+                }}
+            >
+                Connect Wallet
+            </button>
 
             {showOptions && (
                 <div style={{
@@ -76,7 +70,6 @@ export default function StartPage() {
                         minWidth: 280
                     }}>
                         <h2 style={{ marginBottom: 20, color: '#fff' }}>Select Wallet</h2>
-
                         <button
                             onClick={() => handleWalletClick('farcaster')}
                             style={{
@@ -87,7 +80,6 @@ export default function StartPage() {
                         >
                             Farcaster Wallet
                         </button>
-
                         <button
                             onClick={() => handleWalletClick('coinbase')}
                             style={{
@@ -98,7 +90,6 @@ export default function StartPage() {
                         >
                             Coinbase Wallet
                         </button>
-
                         <div>
                             <button
                                 onClick={() => setShowOptions(false)}
