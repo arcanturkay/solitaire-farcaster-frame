@@ -7,7 +7,7 @@ export async function GET() {
     name: "Solitaire on Farcaster",
     slug: "solitaire-frame",
     version: "0.1.0",
-    entrypoint: "https://solitaire-farcaster-frame.vercel.app/",
+    entrypoint: "https://solitaire-farcaster-frame.vercel.app/start",
     author: "Arcan Türkay"
   };
 
