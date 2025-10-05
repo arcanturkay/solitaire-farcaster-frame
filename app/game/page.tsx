@@ -1,96 +1,64 @@
 'use client';
-import { useEffect } from 'react';
-import '/styles/solitaire.css';
-import { initSolitaire } from '../scripts/solitaire';
+
+import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
+import { useRouter } from 'next/navigation';
+import createClient from '@farcaster/miniapp-sdk';
 
 export default function GamePage() {
     const { address, isConnected } = useAccount();
+    const router = useRouter();
+    const [playerId, setPlayerId] = useState<string | null>(null);
 
     useEffect(() => {
-        const setupPlayer = async () => {
-            let currentPlayerId = localStorage.getItem('currentPlayerId');
+        async function initGame() {
+            try {
+                const sdk = createClient;
+                sdk.actions.ready(); // ⚡ yeşil ekran kalkar
 
-            if (!currentPlayerId && isConnected && address) {
-                try {
-                    const fc = farcasterMiniApp();
-                    if (fc.actions?.ready) await fc.actions.ready(); // ⚡ SDK hazır
+                const context = await sdk.context; // 👈 async bekleniyor
+                console.log("🟣 Farcaster context:", context);
 
-                    const context = fc?.context;
-                    if (context?.user?.fid) {
-                        currentPlayerId = `FID-${context.user.fid}`;
-                    } else if (context?.user?.username) {
-                        currentPlayerId = context.user.username;
-                    } else {
-                        currentPlayerId = address.slice(0, 6) + '...' + address.slice(-4);
-                    }
+                let id: string | null = null;
 
-                    localStorage.setItem('currentPlayerId', currentPlayerId);
-                } catch (err) {
-                    console.warn('Farcaster user fetch failed:', err);
-                    currentPlayerId = 'Guest';
+                if (context?.user?.fid) {
+                    id = `FID-${context.user.fid}`;
+                } else if (context?.user?.username) {
+                    id = context.user.username;
+                } else if (isConnected && address) {
+                    id = address;
+                } else {
+                    id = 'Guest';
                 }
+
+                setPlayerId(id);
+                localStorage.setItem('currentPlayerId', id);
+            } catch (err) {
+                console.error("❌ Game init error:", err);
             }
+        }
 
-            const gameContainer = document.getElementById('game-container');
-            if (!gameContainer) return;
+        initGame();
+    }, [address, isConnected]);
 
-            initSolitaire(currentPlayerId || 'Guest'); // ⚡ Oyunu başlat
-        };
-
-        setupPlayer();
-    }, [isConnected, address]);
+    if (!playerId) {
+        return (
+            <div className="flex h-screen items-center justify-center text-white bg-green-700">
+                <p>Loading game...</p>
+            </div>
+        );
+    }
 
     return (
-        <div id="game-container" className="game-container">
-            <h1>Solitaire</h1>
-            <div className="score-display">Score: 0</div>
-            <div id="current-player-status"></div>
-
-            <div className="top-piles">
-                <div className="stock-waste-piles">
-                    <div id="stock" className="pile"><div className="pile-placeholder"></div></div>
-                    <div id="waste" className="pile"><div className="pile-placeholder"></div></div>
-                </div>
-                <div className="foundation-piles">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="pile foundation"><div className="pile-placeholder"></div></div>
-                    ))}
-                </div>
-            </div>
-
-            <div className="tableau-piles">
-                {Array.from({ length: 7 }).map((_, i) => (
-                    <div key={i} className="pile tableau"></div>
-                ))}
-            </div>
-
-            <div className="controls">
-                <button className="new-game-btn">New Game</button>
-                <button id="leaderboard-btn" className="control-btn">Leaderboard</button>
-                <button id="auto-finish-btn" className="control-btn" style={{ display: 'none' }}>Auto-Finish</button>
-            </div>
-
-            <div id="win-modal" className="modal-overlay">
-                <div className="modal-content">
-                    <h2>You Win!</h2>
-                    <p id="final-score"></p>
-                    <p>Score saved for: <span id="winning-player-name"></span></p>
-                    <button className="new-game-btn play-again-btn">Play Again</button>
-                </div>
-            </div>
-
-            <div id="leaderboard-modal" className="modal-overlay">
-                <div className="modal-content">
-                    <h2>Leaderboard (Accumulated Score)</h2>
-                    <table id="leaderboard-table">
-                        <thead><tr><th>Rank</th><th>Name</th><th>Total Score</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                    <button id="close-leaderboard-btn" className="control-btn">Close</button>
-                </div>
-            </div>
+        <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-green-700 to-green-900 text-white">
+            <h1 className="text-3xl font-bold mb-4">Solitaire Game</h1>
+            <p className="mb-2">Welcome, {playerId}</p>
+            <button
+                onClick={() => router.push('/game/play')}
+                className="px-6 py-2 bg-white text-green-700 font-semibold rounded-xl shadow hover:bg-gray-100"
+            >
+                Start Game
+            </button>
         </div>
     );
 }

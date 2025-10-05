@@ -6,7 +6,7 @@ import { useAccount, useConnect } from 'wagmi';
 import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
 import { coinbaseWallet } from '@wagmi/connectors';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@farcaster/miniapp-sdk'; // ✅ yeni import
+import createClient from '@farcaster/miniapp-sdk'; // ⚡ import doğru
 
 export default function StartPage() {
     const [showOptions, setShowOptions] = useState(true);
@@ -14,15 +14,14 @@ export default function StartPage() {
     const { address, isConnected } = useAccount();
     const router = useRouter();
 
+    // ✅ Farcaster SDK’yı başlat — yeşil ekranın kalkması için
     useEffect(() => {
-        // ✅ Farcaster SDK Ready çağrısı (Yeşil ekranın kalkması için)
-        const sdk = createClient();
-        sdk.actions.ready();
+        const sdk = createClient; // ✅ Parantez yok!
+        sdk.actions.ready(); // Mini app’e “hazırım” sinyali gönderir
     }, []);
 
     const handleWalletClick = (wallet: 'farcaster' | 'coinbase') => {
         setShowOptions(false);
-
         if (wallet === 'farcaster') {
             connect({ connector: farcasterMiniApp() });
         } else {
@@ -46,18 +45,11 @@ export default function StartPage() {
             color: 'white',
             textAlign: 'center',
             padding: 24,
-            position: 'relative'
         }}>
-            <div style={{ transform: 'translateY(-4vh)' }}>
+            <div>
                 <div style={{
-                    width: 96,
-                    height: 96,
-                    borderRadius: 24,
-                    background: '#fff',
-                    margin: '0 auto 20px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    width: 96, height: 96, borderRadius: 24, background: '#fff',
+                    margin: '0 auto 20px', display: 'flex', justifyContent: 'center', alignItems: 'center',
                     boxShadow: '0 6px 24px rgba(0,0,0,.25)',
                 }}>
                     <Image src="/wallet-icon.png" alt="Wallet" width={96} height={96} />
@@ -119,17 +111,15 @@ export default function StartPage() {
                         >
                             Coinbase Wallet
                         </button>
-                        <div>
-                            <button
-                                onClick={() => setShowOptions(false)}
-                                style={{
-                                    marginTop: 20, padding: '8px 16px', borderRadius: 8,
-                                    border: '1px solid #ccc', cursor: 'pointer', background: 'white'
-                                }}
-                            >
-                                Cancel
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setShowOptions(false)}
+                            style={{
+                                marginTop: 20, padding: '8px 16px', borderRadius: 8,
+                                border: '1px solid #ccc', cursor: 'pointer', background: 'white'
+                            }}
+                        >
+                            Cancel
+                        </button>
                     </div>
                 </div>
             )}
